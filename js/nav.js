@@ -1,7 +1,6 @@
-
 // =====================================================
 // NAV.JS
-// NAVIGASI RESPONSIVE + ICON
+// NAVIGASI SIDEBAR + ICON
 // =====================================================
 
 import {
@@ -18,7 +17,6 @@ import {
 export function requireLogin() {
 
     const s = getSession();
-
 
     // -------------------------------------------------
     // BELUM LOGIN
@@ -52,44 +50,27 @@ export function requireLogin() {
 
     const links = [
 
-        // -------------------------------------------------
-        // DASHBOARD
-        // -------------------------------------------------
-
         [
             "dashboard.html",
             "🏠",
             "Dashboard"
         ],
 
-
-        // -------------------------------------------------
-        // MENU ADMIN
-        // -------------------------------------------------
-
         ...(isAdmin
             ? [
-
                 [
                     "input-overtime.html",
                     "📝",
                     "Input Overtime"
                 ],
-
                 [
                     "users.html",
                     "👥",
                     "Akun"
                 ]
-
             ]
             : []
         ),
-
-
-        // -------------------------------------------------
-        // HISTORY
-        // -------------------------------------------------
 
         [
             "history.html",
@@ -97,45 +78,30 @@ export function requireLogin() {
             "History Overtime"
         ],
 
-
-        // -------------------------------------------------
-        // EDIT PASSWORD
-        // -------------------------------------------------
-
-        [
+         [
             "edit-password.html",
-            "🔑",
+            "📋",
             "Edit Password"
         ],
 
-
-        // -------------------------------------------------
-        // SUMMARY / AKUMULASI
-        // -------------------------------------------------
-
         ...(isAdmin
-
             ? [
-
                 [
                     "summary-overtime.html",
                     "📊",
                     "Summary Overtime"
                 ]
-
             ]
-
             : [
-
                 [
                     "akumulasi.html",
                     "📊",
                     "Akumulasi Overtime"
                 ]
-
             ]
+        ),
 
-        )
+       
 
     ];
 
@@ -167,23 +133,13 @@ export function requireLogin() {
 
 
     // =================================================
-    // NAVBAR
+    // BUAT SIDEBAR
     // =================================================
 
     const nav =
         document.createElement("nav");
 
     nav.className = "topbar";
-
-
-    // =================================================
-    // HEADER
-    // =================================================
-
-    const header =
-        document.createElement("div");
-
-    header.className = "nav-header";
 
 
     // =================================================
@@ -197,63 +153,14 @@ export function requireLogin() {
 
     brand.innerHTML = `
         <span class="brand-icon">⏰</span>
-
-        <span class="brand-text">
-            Overtime System
-        </span>
+        <span>Overtime System</span>
     `;
 
-
-    header.appendChild(brand);
-
-
-    // =================================================
-    // USER INFO
-    // =================================================
-
-    const userInfo =
-        document.createElement("div");
-
-    userInfo.className = "user-info";
-
-
-    userInfo.innerHTML = `
-        <div class="user-name">
-            👤 ${esc(s.name || "User")}
-        </div>
-
-        <div class="user-detail">
-            SAP ID: ${esc(s.sapId || "-")}
-        </div>
-
-        <div class="user-detail">
-            Role: ${esc(s.role || "-")}
-        </div>
-    `;
-
-
-    header.appendChild(userInfo);
+    nav.appendChild(brand);
 
 
     // =================================================
-    // MASUKKAN HEADER
-    // =================================================
-
-    nav.appendChild(header);
-
-
-    // =================================================
-    // MENU WRAPPER
-    // =================================================
-
-    const menu =
-        document.createElement("div");
-
-    menu.className = "nav-menu";
-
-
-    // =================================================
-    // BUAT MENU
+    // MENU
     // =================================================
 
     links.forEach(
@@ -264,16 +171,10 @@ export function requireLogin() {
 
             a.href = href;
 
-
-            // -------------------------------------------------
-            // ACTIVE MENU
-            // -------------------------------------------------
-
             a.className =
                 file === href
                     ? "active"
                     : "";
-
 
             a.innerHTML = `
                 <span class="nav-icon">
@@ -286,17 +187,43 @@ export function requireLogin() {
             `;
 
 
-            menu.appendChild(a);
+            nav.appendChild(a);
 
         }
     );
 
 
     // =================================================
-    // MASUKKAN MENU
+    // USER INFO
     // =================================================
 
-    nav.appendChild(menu);
+    const userInfo =
+        document.createElement("div");
+
+    userInfo.className =
+        "user-info";
+
+
+    userInfo.innerHTML = `
+        <strong>
+            👤 ${esc(s.name || "User")}
+        </strong>
+
+        <br>
+
+        <span>
+            SAP ID: ${esc(s.sapId || "-")}
+        </span>
+
+        <br>
+
+        <span>
+            Role: ${esc(s.role || "-")}
+        </span>
+    `;
+
+
+    nav.appendChild(userInfo);
 
 
     // =================================================
@@ -310,35 +237,26 @@ export function requireLogin() {
 
     logoutBtn.id = "logout";
 
-    logoutBtn.className = "logout-btn";
-
-
     logoutBtn.innerHTML = `
         <span class="nav-icon">
             🚪
         </span>
 
-        <span class="nav-label">
+        <span>
             Logout
         </span>
     `;
 
 
-    // =================================================
-    // EVENT LOGOUT
-    // =================================================
-
     logoutBtn.addEventListener(
         "click",
         () => {
 
-            const yakin =
+            if (
                 confirm(
                     "Apakah Anda yakin ingin logout?"
-                );
-
-
-            if (yakin) {
+                )
+            ) {
 
                 logout();
 
@@ -348,15 +266,11 @@ export function requireLogin() {
     );
 
 
-    // =================================================
-    // LOGOUT PALING BAWAH
-    // =================================================
-
     nav.appendChild(logoutBtn);
 
 
     // =================================================
-    // MASUKKAN NAV KE CONTAINER
+    // MASUKKAN SIDEBAR KE HALAMAN
     // =================================================
 
     navContainer.appendChild(nav);
