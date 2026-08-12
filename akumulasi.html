@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Akumulasi Overtime</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+    <!-- =====================================================
+         SIDEBAR
+         nav.js akan membuat sidebar + icon di dalam #nav
+    ====================================================== -->
+
+    <div id="nav"></div>
+
+
+    <!-- =====================================================
+         KONTEN UTAMA
+    ====================================================== -->
+
+    <main class="container">
+
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="page-head">
+
+            <h2>
+                Akumulasi Overtime
+            </h2>
+
+        </div>
+
+
+        <!-- =================================================
+             FILTER TANGGAL
+        ================================================== -->
+
+        <div class="panel filters">
+
+            <label>
+
+                Dari
+
+                <input
+                    type="date"
+                    id="from"
+                >
+
+            </label>
+
+
+            <label>
+
+                Sampai
+
+                <input
+                    type="date"
+                    id="to"
+                >
+
+            </label>
+
+
+            <div class="filter-actions">
+
+                <button
+                    type="button"
+                    id="filterBtn"
+                >
+                    Tampilkan
+                </button>
+
+
+                <button
+                    type="button"
+                    id="resetBtn"
+                    class="secondary"
+                >
+                    Reset
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SUMMARY
+        ================================================== -->
+
+        <div class="cards">
+
+
+            <!-- TOTAL DATA -->
+
+            <div class="card">
+
+                <span>
+                    Total Data
+                </span>
+
+                <b id="count">
+                    0
+                </b>
+
+                <small>
+                    Data overtime pada periode
+                </small>
+
+            </div>
+
+
+            <!-- TOTAL JAM -->
+
+            <div class="card">
+
+                <span>
+                    Total Jam
+                </span>
+
+                <b id="hours">
+                    0
+                </b>
+
+                <small>
+                    Akumulasi jam overtime
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMASI
+        ================================================== -->
+
+        <div
+            id="info"
+            class="message"
+        >
+            Silakan pilih periode tanggal.
+        </div>
+
+
+        <!-- =================================================
+             DOWNLOAD
+        ================================================== -->
+
+        <div class="panel">
+
+            <div
+                style="
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                    align-items:center;
+                "
+            >
+
+                <button
+                    type="button"
+                    id="downloadExcelBtn"
+                >
+                    📊 Download Excel
+                </button>
+
+
+                <button
+                    type="button"
+                    id="downloadPdfBtn"
+                >
+                    📄 Download PDF
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             SUMMARY OVERTIME
+        ================================================== -->
+
+        <div class="panel">
+
+            <h3>
+                Summary Overtime
+            </h3>
+
+
+            <p id="periodLabel">
+                Belum memilih periode
+            </p>
+
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                No
+                            </th>
+
+                            <th>
+                                Tanggal
+                            </th>
+
+                            <th>
+                                Jam
+                            </th>
+
+                            <th>
+                                Keterangan
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="rows">
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="empty"
+                            >
+                                Silakan pilih periode.
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+    </main>
+
+
+    <!-- =====================================================
+         JAVASCRIPT AKUMULASI
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/akumulasi.js"
+    ></script>
+
+
+    <!-- =====================================================
+         JAVASCRIPT DOWNLOAD
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/akumulasi-download.js"
+    ></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Dashboard - Overtime System</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+         NAVIGASI
+         Sidebar + icon dibuat SATU KALI oleh nav.js
+    ====================================================== -->
+
+    <div id="nav"></div>
+
+
+    <!-- =====================================================
+         KONTEN UTAMA
+    ====================================================== -->
+
+    <main class="container">
+
+
+        <!-- =================================================
+             HEADER
+        ================================================== -->
+
+        <div class="page-head">
+
+            <h2>
+                Dashboard
+            </h2>
+
+        </div>
+
+
+        <!-- =================================================
+             RINGKASAN DATA
+        ================================================== -->
+
+        <div class="cards">
+
+
+            <!-- TOTAL OVERTIME -->
+
+            <div class="card">
+
+                <span>
+                    Total Overtime
+                </span>
+
+                <b id="totalOt">
+                    0
+                </b>
+
+                <small>
+                    Jumlah data overtime
+                </small>
+
+            </div>
+
+
+            <!-- TOTAL JAM OVERTIME -->
+
+            <div class="card">
+
+                <span>
+                    Total Jam Overtime
+                </span>
+
+                <b id="totalHours">
+                    0
+                </b>
+
+                <small>
+                    Akumulasi jam overtime
+                </small>
+
+            </div>
+
+
+            <!-- TOTAL USER -->
+
+            <div class="card">
+
+                <span>
+                    Total User
+                </span>
+
+                <b id="totalUsers">
+                    0
+                </b>
+
+                <small>
+                    Jumlah akun pengguna
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+        <!-- =================================================
+             INFORMASI
+        ================================================== -->
+
+        <div class="panel">
+
+            <h3>
+                Informasi
+            </h3>
+
+            <p id="welcome">
+                Memuat informasi pengguna...
+            </p>
+
+        </div>
+
+
+    </main>
+
+
+    <!-- =====================================================
+         JAVASCRIPT DASHBOARD
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/dashboard.js"
+    ></script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="id">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>Chat</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+         SIDEBAR KIRI
+    ====================================================== -->
+
+    <nav class="topbar">
+
+        <!-- BRAND -->
+
+        <div class="brand">
+            Overtime System
+        </div>
+
+
+        <!-- MENU -->
+
+        <a href="dashboard.html">
+             Dashboard
+        </a>
+
+        <a href="history.html">
+             History Overtime
+        </a>
+
+        <a href="akumulasi.html">
+             Akumulasi Overtime
+        </a>
+
+        <a
+            href="chat.html"
+            class="active"
+        >
+             Chat
+        </a>
+
+
+        <!-- USER INFO -->
+
+        <div
+            class="user-info"
+            id="userInfo"
+        >
+            Memuat akun...
+        </div>
+
+
+        <!-- LOGOUT -->
+
+        <button
+            type="button"
+            id="logoutBtn"
+        >
+            🚪 Logout
+        </button>
+
+    </nav>
+
+
+    <!-- =====================================================
+         CONTENT
+    ====================================================== -->
+
+    <main class="container">
+
+        <!-- HEADER -->
+
+        <div class="page-head">
+
+            <h2>
+                Chat
+            </h2>
+
+        </div>
+
+
+        <!-- =================================================
+             CHAT PANEL
+        ================================================== -->
+
+        <div class="panel">
+
+
+            <!-- ADMIN PILIH USER -->
+
+            <label
+                id="adminSelectWrap"
+                style="display:none;"
+            >
+
+                Pilih User
+
+                <select id="userSelect">
+
+                    <option value="">
+                        Memuat user...
+                    </option>
+
+                </select>
+
+            </label>
+
+
+            <!-- CHAT -->
+
+            <div
+                id="chatBox"
+                class="chat-box"
+            >
+
+                <div class="empty">
+                    Memuat percakapan...
+                </div>
+
+            </div>
+
+
+            <!-- FORM CHAT -->
+
+            <form
+                id="chatForm"
+                class="chat-form"
+            >
+
+                <input
+                    id="message"
+                    type="text"
+                    placeholder="Tulis pesan..."
+                    autocomplete="off"
+                    required
+                >
+
+                <button
+                    type="submit"
+                >
+                    📤 Kirim
+                </button>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         SESSION / NAV
+    ====================================================== -->
+
+    <script type="module">
+
+        import {
+            requireLogin,
+            esc
+        } from "./nav.js";
+
+
+        const session =
+            requireLogin();
+
+
+        if (!session) {
+
+            window.location.href =
+                "index.html";
+
+        }
+
+
+        const userInfo =
+            document.getElementById(
+                "userInfo"
+            );
+
+
+        if (session && userInfo) {
+
+            userInfo.innerHTML = `
+                <strong>
+                    ${esc(
+                        session.name ||
+                        "User"
+                    )}
+                </strong>
+
+                <br>
+
+                SAP ID:
+                ${esc(
+                    session.sapId ||
+                    "-"
+                )}
+            `;
+        }
+
+
+        const logoutBtn =
+            document.getElementById(
+                "logoutBtn"
+            );
+
+
+        if (logoutBtn) {
+
+            logoutBtn.addEventListener(
+                "click",
+                () => {
+
+                    if (
+                        confirm(
+                            "Apakah Anda yakin ingin logout?"
+                        )
+                    ) {
+
+                        localStorage.removeItem(
+                            "overtimeSession"
+                        );
+
+                        window.location.href =
+                            "index.html";
+                    }
+
+                }
+            );
+        }
+
+    </script>
+
+
+    <!-- =====================================================
+         CHAT JAVASCRIPT
+    ====================================================== -->
+
+    <script
+        type="module"
+        src="js/chat.js"
+    ></script>
+
+</body>
+
+</html>
