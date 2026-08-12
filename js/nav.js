@@ -1,6 +1,6 @@
 // =====================================================
 // NAV.JS
-// NAVIGASI SIDEBAR + ICON
+// NAVIGASI SIDEBAR + IDENTITAS USER
 // =====================================================
 
 import {
@@ -78,9 +78,9 @@ export function requireLogin() {
             "History Overtime"
         ],
 
-         [
+        [
             "edit-password.html",
-            "📋",
+            "🔑",
             "Edit Password"
         ],
 
@@ -99,9 +99,7 @@ export function requireLogin() {
                     "Akumulasi Overtime"
                 ]
             ]
-        ),
-
-       
+        )
 
     ];
 
@@ -186,44 +184,10 @@ export function requireLogin() {
                 </span>
             `;
 
-
             nav.appendChild(a);
 
         }
     );
-
-
-    // =================================================
-    // USER INFO
-    // =================================================
-
-    const userInfo =
-        document.createElement("div");
-
-    userInfo.className =
-        "user-info";
-
-
-    userInfo.innerHTML = `
-        <strong>
-            👤 ${esc(s.name || "User")}
-        </strong>
-
-        <br>
-
-        <span>
-            SAP ID: ${esc(s.sapId || "-")}
-        </span>
-
-        <br>
-
-        <span>
-            Role: ${esc(s.role || "-")}
-        </span>
-    `;
-
-
-    nav.appendChild(userInfo);
 
 
     // =================================================
@@ -270,10 +234,53 @@ export function requireLogin() {
 
 
     // =================================================
-    // MASUKKAN SIDEBAR KE HALAMAN
+    // MASUKKAN SIDEBAR
     // =================================================
 
     navContainer.appendChild(nav);
+
+
+    // =================================================
+    // IDENTITAS USER
+    //
+    // DIBUAT DI LUAR SIDEBAR
+    // AGAR BISA BERADA DI KANAN ATAS
+    // =================================================
+
+    const userInfo =
+        document.createElement("div");
+
+    userInfo.className =
+        "user-info";
+
+
+    userInfo.innerHTML = `
+        <span class="user-name">
+            👤 ${esc(s.name || "User")}
+        </span>
+
+        <span class="user-sap">
+            SAP ID:
+            <strong>
+                ${esc(s.sapId || "-")}
+            </strong>
+        </span>
+
+        <span class="user-role">
+            Role:
+            <strong>
+                ${esc(s.role || "-")}
+            </strong>
+        </span>
+    `;
+
+
+    // =================================================
+    // MASUKKAN IDENTITAS KE CONTAINER NAV
+    // TAPI DI LUAR .topbar
+    // =================================================
+
+    navContainer.appendChild(userInfo);
 
 
     // =================================================
