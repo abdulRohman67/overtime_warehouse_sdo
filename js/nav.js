@@ -1,7 +1,7 @@
 
 // =====================================================
 // NAV.JS
-// NAVIGASI SIDEBAR + ICON
+// NAVIGASI RESPONSIVE + ICON
 // =====================================================
 
 import {
@@ -167,13 +167,23 @@ export function requireLogin() {
 
 
     // =================================================
-    // BUAT SIDEBAR
+    // NAVBAR
     // =================================================
 
     const nav =
         document.createElement("nav");
 
     nav.className = "topbar";
+
+
+    // =================================================
+    // HEADER
+    // =================================================
+
+    const header =
+        document.createElement("div");
+
+    header.className = "nav-header";
 
 
     // =================================================
@@ -187,10 +197,14 @@ export function requireLogin() {
 
     brand.innerHTML = `
         <span class="brand-icon">⏰</span>
-        <span>Overtime System</span>
+
+        <span class="brand-text">
+            Overtime System
+        </span>
     `;
 
-    nav.appendChild(brand);
+
+    header.appendChild(brand);
 
 
     // =================================================
@@ -200,38 +214,46 @@ export function requireLogin() {
     const userInfo =
         document.createElement("div");
 
-    userInfo.className =
-        "user-info";
+    userInfo.className = "user-info";
 
 
     userInfo.innerHTML = `
-        <strong>
+        <div class="user-name">
             👤 ${esc(s.name || "User")}
-        </strong>
+        </div>
 
-        <br>
-
-        <span>
+        <div class="user-detail">
             SAP ID: ${esc(s.sapId || "-")}
-        </span>
+        </div>
 
-        <br>
-
-        <span>
+        <div class="user-detail">
             Role: ${esc(s.role || "-")}
-        </span>
+        </div>
     `;
 
 
-    // =================================================
-    // MASUKKAN IDENTITAS KE ATAS
-    // =================================================
-
-    nav.appendChild(userInfo);
+    header.appendChild(userInfo);
 
 
     // =================================================
-    // MENU
+    // MASUKKAN HEADER
+    // =================================================
+
+    nav.appendChild(header);
+
+
+    // =================================================
+    // MENU WRAPPER
+    // =================================================
+
+    const menu =
+        document.createElement("div");
+
+    menu.className = "nav-menu";
+
+
+    // =================================================
+    // BUAT MENU
     // =================================================
 
     links.forEach(
@@ -242,10 +264,16 @@ export function requireLogin() {
 
             a.href = href;
 
+
+            // -------------------------------------------------
+            // ACTIVE MENU
+            // -------------------------------------------------
+
             a.className =
                 file === href
                     ? "active"
                     : "";
+
 
             a.innerHTML = `
                 <span class="nav-icon">
@@ -258,10 +286,17 @@ export function requireLogin() {
             `;
 
 
-            nav.appendChild(a);
+            menu.appendChild(a);
 
         }
     );
+
+
+    // =================================================
+    // MASUKKAN MENU
+    // =================================================
+
+    nav.appendChild(menu);
 
 
     // =================================================
@@ -277,6 +312,7 @@ export function requireLogin() {
 
     logoutBtn.className = "logout-btn";
 
+
     logoutBtn.innerHTML = `
         <span class="nav-icon">
             🚪
@@ -288,6 +324,10 @@ export function requireLogin() {
     `;
 
 
+    // =================================================
+    // EVENT LOGOUT
+    // =================================================
+
     logoutBtn.addEventListener(
         "click",
         () => {
@@ -296,6 +336,7 @@ export function requireLogin() {
                 confirm(
                     "Apakah Anda yakin ingin logout?"
                 );
+
 
             if (yakin) {
 
@@ -308,14 +349,14 @@ export function requireLogin() {
 
 
     // =================================================
-    // LOGOUT DI BAGIAN PALING BAWAH
+    // LOGOUT PALING BAWAH
     // =================================================
 
     nav.appendChild(logoutBtn);
 
 
     // =================================================
-    // MASUKKAN SIDEBAR KE HALAMAN
+    // MASUKKAN NAV KE CONTAINER
     // =================================================
 
     navContainer.appendChild(nav);
@@ -328,5 +369,3 @@ export function requireLogin() {
     return s;
 
 }
-
-
