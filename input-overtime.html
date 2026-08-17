@@ -1,5 +1,7 @@
 <!doctype html>
+
 <html lang="id">
+
 
 <head>
 
@@ -16,6 +18,10 @@
         rel="stylesheet"
         href="css/style.css"
     >
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 </head>
 
@@ -55,7 +61,6 @@
 
         <div class="panel">
 
-
             <div class="notice">
 
                 ℹ️
@@ -72,7 +77,6 @@
                 class="grid-form"
                 style="margin-top:15px"
             >
-
 
                 <!-- ID EDIT -->
 
@@ -107,6 +111,48 @@
                         id="userSap"
                         required
                     ></select>
+
+                </label>
+
+
+                <!-- KATEGORI OVERTIME
+                     TAMBAHAN INPUT SAJA
+                -->
+
+                <label>
+
+                    🏷️ Kategori Overtime
+
+                    <select
+                        id="category"
+                        required
+                    >
+
+                        <option value="">
+                            Pilih kategori
+                        </option>
+
+                        <option value="IOR1">
+                            IOR1
+                        </option>
+
+                        <option value="IOR2">
+                            IOR2
+                        </option>
+
+                        <option value="IOR3">
+                            IOR3
+                        </option>
+
+                        <option value="IPN1">
+                            IPN1
+                        </option>
+
+                        <option value="IPM1">
+                            IPM1
+                        </option>
+
+                    </select>
 
                 </label>
 
@@ -179,7 +225,9 @@
                     <button
                         type="submit"
                     >
+
                         💾 Simpan
+
                     </button>
 
 
@@ -188,11 +236,12 @@
                         class="secondary"
                         id="resetBtn"
                     >
+
                         🔄 Reset
+
                     </button>
 
                 </div>
-
 
             </form>
 
@@ -204,7 +253,6 @@
                 class="message"
             ></div>
 
-
         </div>
 
 
@@ -214,21 +262,17 @@
 
         <div class="panel">
 
-
             <div class="page-head">
-
 
                 <h3>
                     📋 Data Overtime
                 </h3>
-
 
                 <input
                     id="search"
                     style="max-width:320px"
                     placeholder="Cari SAP, nama, tanggal..."
                 >
-
 
             </div>
 
@@ -281,19 +325,14 @@
 
                     </thead>
 
-
                     <tbody id="rows">
-
                     </tbody>
-
 
                 </table>
 
             </div>
 
-
         </div>
-
 
     </main>
 
