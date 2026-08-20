@@ -1,57 +1,246 @@
 <!doctype html>
 <html lang="id">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+>
+
 <title>Summary Overtime</title>
-<link rel="stylesheet" href="css/style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+
+<link
+    rel="stylesheet"
+    href="css/style.css"
+>
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
+</script>
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+</script>
+
+<script
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js">
+</script>
+
 </head>
+
+
 <body>
+
 <div id="nav"></div>
+
+
 <main class="container">
-  <div class="page-head">
-    <h2>Summary Overtime</h2>
-  </div>
 
-  <div class="panel">
-    <div class="notice">
-      Pilih periode untuk melihat total jam overtime setiap user. Default periode: 10 Juli 2026 sampai 10 Agustus 2026.
-    </div>
-  </div>
+    <div class="page-head">
 
-  <div class="panel filters">
-    <label>Dari<input type="date" id="from"></label>
-    <label>Sampai<input type="date" id="to"></label>
-    <div class="filter-actions">
-      <button type="button" id="filterBtn">Tampilkan</button>
-      <button type="button" id="resetBtn" class="secondary">Reset</button>
-    </div>
-    <div class="filter-actions">
-      <button type="button" id="excelBtn" class="success">Download Excel</button>
-      <button type="button" id="pdfBtn">Download PDF</button>
-    </div>
-  </div>
+        <h2>Summary Overtime</h2>
 
-  <div class="cards">
-    <div class="card"><span>Jumlah User</span><b id="userCount">0</b></div>
-    <div class="card"><span>Grand Total Jam</span><b id="grandTotal">0</b></div>
-  </div>
-
-  <div class="panel">
-    <h3>Rekap Overtime Per User</h3>
-    <div class="summary-box" id="periodLabel"></div>
-    <div class="table-wrap">
-      <table id="summaryTable">
-        <thead><tr><th>No</th><th>SAP ID</th><th>Nama User</th><th>Jumlah Jam</th></tr></thead>
-        <tbody id="rows"><tr><td colspan="4" class="empty">Memuat data...</td></tr></tbody>
-        <tfoot><tr><th colspan="3" style="text-align:right">GRAND TOTAL</th><th id="tableGrandTotal">0</th></tr></tfoot>
-      </table>
     </div>
-  </div>
+
+
+    <div class="panel">
+
+        <div class="notice">
+
+            Pilih periode untuk melihat total jam overtime
+            dan konversi overtime setiap user.
+            Default periode: 10 Juli 2026 sampai 10 Agustus 2026.
+
+        </div>
+
+    </div>
+
+
+    <div class="panel filters">
+
+        <label>
+            Dari
+            <input
+                type="date"
+                id="from"
+            >
+        </label>
+
+
+        <label>
+            Sampai
+            <input
+                type="date"
+                id="to"
+            >
+        </label>
+
+
+        <div class="filter-actions">
+
+            <button
+                type="button"
+                id="filterBtn"
+            >
+                Tampilkan
+            </button>
+
+
+            <button
+                type="button"
+                id="resetBtn"
+                class="secondary"
+            >
+                Reset
+            </button>
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button
+                type="button"
+                id="excelBtn"
+                class="success"
+            >
+                Download Excel
+            </button>
+
+
+            <button
+                type="button"
+                id="pdfBtn"
+            >
+                Download PDF
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="cards">
+
+        <div class="card">
+
+            <span>Jumlah User</span>
+
+            <b id="userCount">0</b>
+
+        </div>
+
+
+        <div class="card">
+
+            <span>Grand Total Jam</span>
+
+            <b id="grandTotal">0</b>
+
+        </div>
+
+
+        <div class="card">
+
+            <span>Grand Total Konversi</span>
+
+            <b id="grandConversion">0</b>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel">
+
+        <h3>Rekap Overtime Per User</h3>
+
+
+        <div
+            class="summary-box"
+            id="periodLabel"
+        ></div>
+
+
+        <div class="table-wrap">
+
+            <table id="summaryTable">
+
+                <thead>
+
+                    <tr>
+
+                        <th>No</th>
+
+                        <th>SAP ID</th>
+
+                        <th>Nama User</th>
+
+                        <th>Jumlah Jam</th>
+
+                        <th>Konversi Overtime</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="rows">
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="empty"
+                        >
+                            Memuat data...
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+
+                <tfoot>
+
+                    <tr>
+
+                        <th
+                            colspan="3"
+                            style="text-align:right"
+                        >
+                            GRAND TOTAL
+                        </th>
+
+                        <th id="tableGrandTotal">
+                            0
+                        </th>
+
+                        <th id="tableGrandConversion">
+                            0
+                        </th>
+
+                    </tr>
+
+                </tfoot>
+
+            </table>
+
+        </div>
+
+    </div>
+
 </main>
-<script type="module" src="js/summary-overtime.js"></script>
+
+
+<script
+    type="module"
+    src="js/summary-overtime.js">
+</script>
+
 </body>
+
 </html>
