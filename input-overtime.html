@@ -2,7 +2,6 @@
 
 <html lang="id">
 
-
 <head>
 
     <meta charset="utf-8">
@@ -19,13 +18,17 @@
         href="css/style.css"
     >
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
 </head>
 
+
 <body>
+
 
     <!-- =====================================================
          NAVIGASI
@@ -35,11 +38,13 @@
     <div id="nav"></div>
 
 
+
     <!-- =====================================================
          KONTEN UTAMA
     ====================================================== -->
 
     <main class="container">
+
 
 
         <!-- =================================================
@@ -55,11 +60,13 @@
         </div>
 
 
+
         <!-- =================================================
              FORM INPUT OVERTIME
         ================================================== -->
 
         <div class="panel">
+
 
             <div class="notice">
 
@@ -72,11 +79,13 @@
             </div>
 
 
+
             <form
                 id="otForm"
                 class="grid-form"
                 style="margin-top:15px"
             >
+
 
                 <!-- ID EDIT -->
 
@@ -84,6 +93,7 @@
                     type="hidden"
                     id="editId"
                 >
+
 
 
                 <!-- TANGGAL -->
@@ -101,6 +111,7 @@
                 </label>
 
 
+
                 <!-- USER TUJUAN -->
 
                 <label>
@@ -115,9 +126,8 @@
                 </label>
 
 
-                <!-- KATEGORI OVERTIME
-                     TAMBAHAN INPUT SAJA
-                -->
+
+                <!-- KATEGORI OVERTIME -->
 
                 <label>
 
@@ -157,6 +167,7 @@
                 </label>
 
 
+
                 <!-- JAM MULAI -->
 
                 <label>
@@ -172,6 +183,7 @@
                 </label>
 
 
+
                 <!-- JAM SELESAI -->
 
                 <label>
@@ -185,6 +197,7 @@
                     >
 
                 </label>
+
 
 
                 <!-- JUMLAH JAM -->
@@ -204,6 +217,25 @@
                 </label>
 
 
+
+                <!-- KONVERSI JAM -->
+
+                <label>
+
+                    🔄 Konversi Jam
+
+                    <input
+                        id="conversionHours"
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        readonly
+                    >
+
+                </label>
+
+
+
                 <!-- KETERANGAN -->
 
                 <label>
@@ -218,9 +250,11 @@
                 </label>
 
 
+
                 <!-- AKSI -->
 
                 <div class="actions full">
+
 
                     <button
                         type="submit"
@@ -229,6 +263,7 @@
                         💾 Simpan
 
                     </button>
+
 
 
                     <button
@@ -241,9 +276,12 @@
 
                     </button>
 
+
                 </div>
 
+
             </form>
+
 
 
             <!-- PESAN -->
@@ -253,7 +291,9 @@
                 class="message"
             ></div>
 
+
         </div>
+
 
 
         <!-- =================================================
@@ -262,11 +302,17 @@
 
         <div class="panel">
 
+
             <div class="page-head">
 
+
                 <h3>
+
                     📋 Data Overtime
+
                 </h3>
+
+
 
                 <input
                     id="search"
@@ -274,7 +320,9 @@
                     placeholder="Cari SAP, nama, tanggal..."
                 >
 
+
             </div>
+
 
 
             <!-- =================================================
@@ -283,58 +331,84 @@
 
             <div class="table-wrap">
 
+
                 <table>
+
 
                     <thead>
 
+
                         <tr>
+
 
                             <th>
                                 Tanggal
                             </th>
 
+
                             <th>
                                 SAP
                             </th>
+
 
                             <th>
                                 Nama
                             </th>
 
+
                             <th>
                                 Mulai
                             </th>
+
 
                             <th>
                                 Selesai
                             </th>
 
+
                             <th>
                                 Jam
                             </th>
+
+
+                            <th>
+                                Konversi Jam
+                            </th>
+
 
                             <th>
                                 Keterangan
                             </th>
 
+
                             <th>
                                 Aksi
                             </th>
 
+
                         </tr>
+
 
                     </thead>
 
+
+
                     <tbody id="rows">
+
                     </tbody>
+
 
                 </table>
 
+
             </div>
+
 
         </div>
 
+
     </main>
+
 
 
     <!-- =====================================================
@@ -345,6 +419,7 @@
         type="module"
         src="js/input-overtime.js"
     ></script>
+
 
 </body>
 
