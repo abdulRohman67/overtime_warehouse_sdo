@@ -1,3 +1,7 @@
+// =====================================================
+// SUMMARY OVERTIME
+// =====================================================
+
 import { db } from "./firebase.js";
 
 import {
@@ -21,7 +25,11 @@ import {
 const session = requireLogin();
 
 if (!session) {
-    throw new Error("Session tidak ditemukan.");
+
+    throw new Error(
+        "Session tidak ditemukan."
+    );
+
 }
 
 
@@ -41,7 +49,7 @@ if (
 
 
 // =====================================================
-// ELEMENT HTML
+// ELEMENT
 // =====================================================
 
 const fromInput =
@@ -71,33 +79,15 @@ const userCount =
 const grandTotal =
     document.getElementById("grandTotal");
 
+// GRAND TOTAL KONVERSI DI CARD ATAS
+const grandConversion =
+    document.getElementById("grandConversion");
+
 const tableGrandTotal =
     document.getElementById("tableGrandTotal");
 
 const periodLabel =
     document.getElementById("periodLabel");
-
-
-// =====================================================
-// CEK ELEMENT
-// =====================================================
-
-console.log(
-    "SUMMARY ELEMENT:",
-    {
-        fromInput,
-        toInput,
-        filterBtn,
-        resetBtn,
-        excelBtn,
-        pdfBtn,
-        rows,
-        userCount,
-        grandTotal,
-        tableGrandTotal,
-        periodLabel
-    }
-);
 
 
 // =====================================================
@@ -110,24 +100,136 @@ let overtime = [];
 
 
 // =====================================================
-// DEFAULT TANGGAL
+// DEFAULT PERIODE
 // =====================================================
 
 function setDefaultPeriod() {
 
     if (fromInput) {
+
         fromInput.value =
             "2026-07-10";
+
     }
 
     if (toInput) {
+
         toInput.value =
             "2026-08-10";
+
     }
 
 }
 
 setDefaultPeriod();
+
+
+// =====================================================
+// KONVERSI DATA LAMA
+// =====================================================
+//
+// Hanya digunakan untuk data lama yang belum
+// mempunyai conversionHours.
+//
+// Data baru mengambil conversionHours langsung
+// dari Firebase.
+// =====================================================
+
+function calculateConversionHours(value) {
+
+    const total =
+        Number(value) || 0;
+
+
+    const conversion = {
+
+        1: 1.5,
+
+        2: 3.5,
+
+        3: 5.5,
+
+        3.5: 6.5,
+
+        4: 7.5,
+
+        5: 9.5,
+
+        6: 11.5,
+
+        7: 14,
+
+        8: 16,
+
+        3.5: 6.5,
+
+        1.5 : 2.5
+
+    };
+
+
+    return conversion[total] !== undefined
+
+        ? conversion[total]
+
+        : total;
+
+}
+
+
+// =====================================================
+// AMBIL KONVERSI DARI RINCIAN
+// =====================================================
+
+function getConversionHours(item) {
+
+    if (!item) {
+
+        return 0;
+
+    }
+
+
+    // =================================================
+    // DATA BARU
+    // =================================================
+    //
+    // Ambil conversionHours langsung dari Firebase.
+    //
+    // =================================================
+
+    if (
+        item.conversionHours !== undefined &&
+        item.conversionHours !== null &&
+        item.conversionHours !== ""
+    ) {
+
+        const value =
+            Number(
+                item.conversionHours
+            );
+
+
+        if (
+            Number.isFinite(value)
+        ) {
+
+            return value;
+
+        }
+
+    }
+
+
+    // =================================================
+    // DATA LAMA
+    // =================================================
+
+    return calculateConversionHours(
+        item.hours || 0
+    );
+
+}
 
 
 // =====================================================
@@ -138,16 +240,9 @@ async function loadData() {
 
     try {
 
-        /*
-         * =============================================
-         * BACA USERS
-         * =============================================
-         */
-
-        console.log(
-            "Membaca Firebase: users"
-        );
-
+        // =================================================
+        // USERS
+        // =================================================
 
         const usersSnapshot =
             await get(
@@ -172,22 +267,9 @@ async function loadData() {
         }
 
 
-        console.log(
-            "USERS FIREBASE:",
-            users
-        );
-
-
-        /*
-         * =============================================
-         * BACA OVERTIME
-         * =============================================
-         */
-
-        console.log(
-            "Membaca Firebase: overtime"
-        );
-
+        // =================================================
+        // OVERTIME
+        // =================================================
 
         const overtimeSnapshot =
             await get(
@@ -219,7 +301,6 @@ async function loadData() {
                     })
                 );
 
-
         } else {
 
             overtime = [];
@@ -228,30 +309,23 @@ async function loadData() {
 
 
         console.log(
-            "OVERTIME FIREBASE:",
+            "USERS:",
+            users
+        );
+
+
+        console.log(
+            "OVERTIME:",
             overtime
-        );
-
-
-        console.log(
-            "JUMLAH USER:",
-            Object.keys(users).length
-        );
-
-
-        console.log(
-            "JUMLAH OVERTIME:",
-            overtime.length
         );
 
 
         render();
 
-
     } catch (error) {
 
         console.error(
-            "ERROR SUMMARY OVERTIME:",
+            "ERROR SUMMARY:",
             error
         );
 
@@ -263,12 +337,12 @@ async function loadData() {
                 <tr>
 
                     <td
-                        colspan="4"
+                        colspan="5"
                         class="empty"
                         style="color:red"
                     >
 
-                        GAGAL MEMBACA FIREBASE
+                        Gagal membaca data.
 
                         <br><br>
 
@@ -291,39 +365,51 @@ async function loadData() {
 
 
 // =====================================================
-// HITUNG SUMMARY
+// GET SUMMARY
+// =====================================================
+//
+// SETIAP DATA OVERTIME DIJUMLAHKAN.
+//
+// JAM:
+//
+// item 1 hours
+// + item 2 hours
+// + item 3 hours
+//
+// KONVERSI:
+//
+// item 1 conversionHours
+// + item 2 conversionHours
+// + item 3 conversionHours
+//
+// TIDAK ADA KONVERSI ULANG DARI TOTAL JAM.
 // =====================================================
 
 function getSummary() {
 
     const from =
-        fromInput
-            ? fromInput.value
-            : "";
+        String(
+            fromInput?.value || ""
+        ).trim();
+
 
     const to =
-        toInput
-            ? toInput.value
-            : "";
+        String(
+            toInput?.value || ""
+        ).trim();
 
-
-    /*
-     * =============================================
-     * BUAT SEMUA USER
-     * =============================================
-     */
 
     const summary = {};
 
+
+    // =================================================
+    // BUAT SEMUA USER
+    // =================================================
 
     Object.entries(
         users
     ).forEach(
         ([sapId, user]) => {
-
-            /*
-             * HANYA ROLE USER
-             */
 
             if (
                 String(
@@ -337,20 +423,30 @@ function getSummary() {
             }
 
 
-            summary[
-                sapId
-            ] = {
+            const key =
+                String(
+                    sapId
+                ).trim();
+
+
+            summary[key] = {
 
                 sapId:
-                    sapId,
+                    key,
 
                 name:
                     String(
                         user?.name ||
-                        sapId
+                        key
                     ),
 
                 hours:
+                    0,
+
+                conversion:
+                    0,
+
+                count:
                     0
 
             };
@@ -359,11 +455,9 @@ function getSummary() {
     );
 
 
-    /*
-     * =============================================
-     * HITUNG OVERTIME
-     * =============================================
-     */
+    // =================================================
+    // AKUMULASI DATA OVERTIME
+    // =================================================
 
     overtime.forEach(
         item => {
@@ -374,21 +468,15 @@ function getSummary() {
                 ).trim();
 
 
-            const userSap =
+            const sap =
                 String(
                     item?.userSap || ""
                 ).trim();
 
 
-            const hours =
-                Number(
-                    item?.hours || 0
-                );
-
-
-            /*
-             * TANGGAL
-             */
+            // =========================================
+            // FILTER DARI
+            // =========================================
 
             if (
                 from &&
@@ -400,6 +488,10 @@ function getSummary() {
             }
 
 
+            // =========================================
+            // FILTER SAMPAI
+            // =========================================
+
             if (
                 to &&
                 date > to
@@ -410,53 +502,92 @@ function getSummary() {
             }
 
 
-            /*
-             * USER HARUS ADA
-             */
+            // =========================================
+            // USER TIDAK TERDAFTAR
+            // =========================================
 
             if (
-                !summary[
-                    userSap
-                ]
+                !summary[sap]
             ) {
-
-                console.warn(
-                    "SAP overtime tidak ditemukan:",
-                    userSap
-                );
 
                 return;
 
             }
 
 
-            /*
-             * TAMBAH JAM
-             */
+            // =========================================
+            // JAM DARI RINCIAN
+            // =========================================
 
-            summary[
-                userSap
-            ].hours +=
+            const hours =
+                Number(
+                    item?.hours || 0
+                );
+
+
+            // =========================================
+            // KONVERSI DARI RINCIAN
+            // =========================================
+
+            const conversion =
+                getConversionHours(
+                    item
+                );
+
+
+            // =========================================
+            // TAMBAH JAM
+            // =========================================
+
+            if (
                 Number.isFinite(hours)
-                    ? hours
-                    : 0;
+            ) {
+
+                summary[sap].hours +=
+                    hours;
+
+            }
+
+
+            // =========================================
+            // TAMBAH KONVERSI
+            // =========================================
+
+            if (
+                Number.isFinite(conversion)
+            ) {
+
+                summary[sap].conversion +=
+                    conversion;
+
+            }
+
+
+            // =========================================
+            // JUMLAH DATA
+            // =========================================
+
+            summary[sap].count +=
+                1;
 
         }
     );
 
 
-    /*
-     * =============================================
-     * SORT NAMA
-     * =============================================
-     */
+    // =================================================
+    // SORT BERDASARKAN NAMA
+    // =================================================
 
     return Object.values(
         summary
     ).sort(
         (a, b) =>
-            a.name.localeCompare(
-                b.name
+            String(
+                a.name
+            ).localeCompare(
+                String(
+                    b.name
+                )
             )
     );
 
@@ -464,156 +595,31 @@ function getSummary() {
 
 
 // =====================================================
-// RENDER
+// FORMAT ANGKA
 // =====================================================
 
-function render() {
+function formatNumber(value) {
 
-    if (!rows) {
-
-        console.error(
-            "Element #rows tidak ditemukan."
-        );
-
-        return;
-
-    }
-
-
-    const data =
-        getSummary();
-
-
-    /*
-     * =============================================
-     * GRAND TOTAL
-     * =============================================
-     */
-
-    const total =
-        data.reduce(
-            (sum, item) =>
-                sum +
-                Number(
-                    item.hours || 0
-                ),
-            0
+    const number =
+        Number(
+            value || 0
         );
 
 
-    /*
-     * =============================================
-     * INFO
-     * =============================================
-     */
+    if (
+        !Number.isFinite(
+            number
+        )
+    ) {
 
-    if (userCount) {
-
-        userCount.textContent =
-            data.length;
+        return "0";
 
     }
 
 
-    if (grandTotal) {
-
-        grandTotal.textContent =
-            total;
-
-    }
-
-
-    if (tableGrandTotal) {
-
-        tableGrandTotal.textContent =
-            total;
-
-    }
-
-
-    if (periodLabel) {
-
-        periodLabel.textContent =
-            "Periode: " +
-            formatDate(
-                fromInput.value
-            ) +
-            " s/d " +
-            formatDate(
-                toInput.value
-            );
-
-    }
-
-
-    /*
-     * =============================================
-     * TIDAK ADA USER
-     * =============================================
-     */
-
-    if (!data.length) {
-
-        rows.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="4"
-                    class="empty"
-                >
-
-                    Tidak ada user.
-
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-
-    }
-
-
-    /*
-     * =============================================
-     * TABEL
-     * =============================================
-     */
-
-    rows.innerHTML =
-        data
-            .map(
-                (item, index) => `
-
-                    <tr>
-
-                        <td>
-                            ${index + 1}
-                        </td>
-
-                        <td>
-                            ${esc(
-                                item.sapId
-                            )}
-                        </td>
-
-                        <td>
-                            ${esc(
-                                item.name
-                            )}
-                        </td>
-
-                        <td>
-                            ${item.hours}
-                        </td>
-
-                    </tr>
-
-                `
-            )
-            .join("");
+    return Number(
+        number.toFixed(2)
+    ).toString();
 
 }
 
@@ -622,17 +628,19 @@ function render() {
 // FORMAT TANGGAL
 // =====================================================
 
-function formatDate(
-    value
-) {
+function formatDate(value) {
 
     if (!value) {
+
         return "-";
+
     }
 
 
     const p =
-        String(value).split("-");
+        String(
+            value
+        ).split("-");
 
 
     if (
@@ -651,6 +659,242 @@ function formatDate(
         "-" +
         p[0]
     );
+
+}
+
+
+// =====================================================
+// RENDER
+// =====================================================
+
+function render() {
+
+    if (!rows) {
+
+        return;
+
+    }
+
+
+    const data =
+        getSummary();
+
+
+    // =================================================
+    // GRAND TOTAL JAM
+    // =================================================
+
+    const totalHours =
+        data.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    Number(
+                        item.hours || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    // =================================================
+    // GRAND TOTAL KONVERSI
+    // =================================================
+
+    const totalConversion =
+        data.reduce(
+            (
+                total,
+                item
+            ) => {
+
+                return (
+                    total +
+                    Number(
+                        item.conversion || 0
+                    )
+                );
+
+            },
+            0
+        );
+
+
+    // =================================================
+    // JUMLAH USER
+    // =================================================
+
+    if (userCount) {
+
+        userCount.textContent =
+            data.length;
+
+    }
+
+
+    // =================================================
+    // GRAND TOTAL JAM CARD
+    // =================================================
+
+    if (grandTotal) {
+
+        grandTotal.textContent =
+            formatNumber(
+                totalHours
+            );
+
+    }
+
+
+    // =================================================
+    // GRAND TOTAL KONVERSI CARD
+    // =================================================
+
+    if (grandConversion) {
+
+        grandConversion.textContent =
+            formatNumber(
+                totalConversion
+            );
+
+    }
+
+
+    // =================================================
+    // PERIOD LABEL
+    // =================================================
+
+    if (periodLabel) {
+
+        periodLabel.textContent =
+            "Periode: " +
+            formatDate(
+                fromInput?.value
+            ) +
+            " s/d " +
+            formatDate(
+                toInput?.value
+            );
+
+    }
+
+
+    // =================================================
+    // DATA KOSONG
+    // =================================================
+
+    if (
+        data.length === 0
+    ) {
+
+        rows.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="5"
+                    class="empty"
+                >
+
+                    Tidak ada user.
+
+                </td>
+
+            </tr>
+
+        `;
+
+    } else {
+
+        // =============================================
+        // TABEL
+        // =============================================
+
+        rows.innerHTML =
+            data
+                .map(
+                    (
+                        item,
+                        index
+                    ) => `
+
+                        <tr>
+
+                            <td>
+                                ${index + 1}
+                            </td>
+
+                            <td>
+                                ${esc(
+                                    item.sapId
+                                )}
+                            </td>
+
+                            <td>
+                                ${esc(
+                                    item.name
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    item.hours
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    item.conversion
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `
+                )
+                .join("");
+
+    }
+
+
+    // =================================================
+    // FOOTER GRAND TOTAL JAM
+    // =================================================
+
+    if (tableGrandTotal) {
+
+        tableGrandTotal.textContent =
+            formatNumber(
+                totalHours
+            );
+
+    }
+
+
+    // =================================================
+    // FOOTER GRAND TOTAL KONVERSI
+    // =================================================
+
+    const conversionFooter =
+        document.getElementById(
+            "tableGrandConversion"
+        );
+
+
+    if (conversionFooter) {
+
+        conversionFooter.textContent =
+            formatNumber(
+                totalConversion
+            );
+
+    }
 
 }
 
@@ -717,9 +961,25 @@ if (excelBtn) {
                 getSummary();
 
 
+            if (
+                data.length === 0
+            ) {
+
+                alert(
+                    "Tidak ada data untuk diekspor."
+                );
+
+                return;
+
+            }
+
+
             const exportData =
                 data.map(
-                    (item, index) => ({
+                    (
+                        item,
+                        index
+                    ) => ({
 
                         No:
                             index + 1,
@@ -731,16 +991,30 @@ if (excelBtn) {
                             item.name,
 
                         "Jumlah Jam":
-                            item.hours
+                            formatNumber(
+                                item.hours
+                            ),
+
+                        "Konversi Lembur":
+                            formatNumber(
+                                item.conversion
+                            )
 
                     })
                 );
 
 
-            const total =
+            // =========================================
+            // GRAND TOTAL
+            // =========================================
+
+            const totalHours =
                 data.reduce(
-                    (sum, item) =>
-                        sum +
+                    (
+                        total,
+                        item
+                    ) =>
+                        total +
                         Number(
                             item.hours || 0
                         ),
@@ -748,17 +1022,40 @@ if (excelBtn) {
                 );
 
 
+            const totalConversion =
+                data.reduce(
+                    (
+                        total,
+                        item
+                    ) =>
+                        total +
+                        Number(
+                            item.conversion || 0
+                        ),
+                    0
+                );
+
+
             exportData.push({
 
-                No: "",
+                No:
+                    "",
 
-                "SAP ID": "",
+                "SAP ID":
+                    "",
 
                 "Nama User":
                     "GRAND TOTAL",
 
                 "Jumlah Jam":
-                    total
+                    formatNumber(
+                        totalHours
+                    ),
+
+                "Konversi Lembur":
+                    formatNumber(
+                        totalConversion
+                    )
 
             });
 
@@ -783,9 +1080,15 @@ if (excelBtn) {
             XLSX.writeFile(
                 workbook,
                 "summary-overtime-" +
-                fromInput.value +
+                (
+                    fromInput?.value ||
+                    ""
+                ) +
                 "-sampai-" +
-                toInput.value +
+                (
+                    toInput?.value ||
+                    ""
+                ) +
                 ".xlsx"
             );
 
@@ -823,6 +1126,19 @@ if (pdfBtn) {
                 getSummary();
 
 
+            if (
+                data.length === 0
+            ) {
+
+                alert(
+                    "Tidak ada data untuk diekspor."
+                );
+
+                return;
+
+            }
+
+
             const {
                 jsPDF
             } =
@@ -833,12 +1149,29 @@ if (pdfBtn) {
                 new jsPDF();
 
 
-            const total =
+            const totalHours =
                 data.reduce(
-                    (sum, item) =>
-                        sum +
+                    (
+                        total,
+                        item
+                    ) =>
+                        total +
                         Number(
                             item.hours || 0
+                        ),
+                    0
+                );
+
+
+            const totalConversion =
+                data.reduce(
+                    (
+                        total,
+                        item
+                    ) =>
+                        total +
+                        Number(
+                            item.conversion || 0
                         ),
                     0
                 );
@@ -864,11 +1197,11 @@ if (pdfBtn) {
             doc.text(
                 "Periode: " +
                 formatDate(
-                    fromInput.value
+                    fromInput?.value
                 ) +
                 " s/d " +
                 formatDate(
-                    toInput.value
+                    toInput?.value
                 ),
                 14,
                 22
@@ -891,22 +1224,33 @@ if (pdfBtn) {
 
             doc.autoTable({
 
-                startY: 28,
+                startY:
+                    28,
 
                 head: [
 
                     [
+
                         "No",
+
                         "SAP ID",
+
                         "Nama User",
-                        "Jumlah Jam"
+
+                        "Jumlah Jam",
+
+                        "Konversi Lembur"
+
                     ]
 
                 ],
 
                 body:
                     data.map(
-                        (item, index) => [
+                        (
+                            item,
+                            index
+                        ) => [
 
                             index + 1,
 
@@ -914,7 +1258,13 @@ if (pdfBtn) {
 
                             item.name,
 
-                            item.hours
+                            formatNumber(
+                                item.hours
+                            ),
+
+                            formatNumber(
+                                item.conversion
+                            )
 
                         ]
                     ),
@@ -922,10 +1272,21 @@ if (pdfBtn) {
                 foot: [
 
                     [
+
                         "",
+
                         "",
+
                         "GRAND TOTAL",
-                        total
+
+                        formatNumber(
+                            totalHours
+                        ),
+
+                        formatNumber(
+                            totalConversion
+                        )
+
                     ]
 
                 ]
@@ -935,9 +1296,15 @@ if (pdfBtn) {
 
             doc.save(
                 "summary-overtime-" +
-                fromInput.value +
+                (
+                    fromInput?.value ||
+                    ""
+                ) +
                 "-sampai-" +
-                toInput.value +
+                (
+                    toInput?.value ||
+                    ""
+                ) +
                 ".pdf"
             );
 
@@ -948,7 +1315,7 @@ if (pdfBtn) {
 
 
 // =====================================================
-// MULAI LOAD
+// INIT
 // =====================================================
 
 loadData();
