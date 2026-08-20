@@ -1,21 +1,21 @@
 // =====================================================
 // AKUMULASI OVERTIME
-// USER
-// FILTER + EXCEL + PDF
 // =====================================================
 
-import {
-    get,
-    ref
-} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
+import { db } from "./firebase.js";
 
 import {
-    db
-} from "./firebase.js";
+    ref,
+    get
+} from "https://www.gstatic.com/firebasejs/12.17.1/firebase-database.js";
 
 import {
     requireLogin
 } from "./nav.js";
+
+import {
+    esc
+} from "./session.js";
 
 
 // =====================================================
@@ -25,30 +25,13 @@ import {
 const session = requireLogin();
 
 if (!session) {
-    throw new Error("User belum login.");
-}
 
-
-// =====================================================
-// ROLE
-// =====================================================
-
-const role = String(
-    session.role || ""
-)
-.trim()
-.toLowerCase();
-
-
-if (role !== "user") {
-
-    window.location.replace(
-        "dashboard.html"
-    );
+    window.location.href = "index.html";
 
     throw new Error(
-        "Halaman hanya untuk user."
+        "Session tidak ditemukan."
     );
+
 }
 
 
@@ -68,20 +51,31 @@ const filterBtn =
 const resetBtn =
     document.getElementById("resetBtn");
 
-const countEl =
+const rows =
+    document.getElementById("rows");
+
+const count =
     document.getElementById("count");
 
-const hoursEl =
+const hours =
     document.getElementById("hours");
 
-const infoEl =
-    document.getElementById("info");
+const conversion =
+    document.getElementById("conversion");
 
-const rowsEl =
-    document.getElementById("rows");
+const info =
+    document.getElementById("info");
 
 const periodLabel =
     document.getElementById("periodLabel");
+
+const tableTotalHours =
+    document.getElementById("tableTotalHours");
+
+const tableTotalConversion =
+    document.getElementById(
+        "tableTotalConversion"
+    );
 
 const downloadExcelBtn =
     document.getElementById(
@@ -98,91 +92,177 @@ const downloadPdfBtn =
 // DATA
 // =====================================================
 
-let overtimeData = [];
+let overtime = [];
 
 
 // =====================================================
-// SAP ID
+// DEFAULT PERIODE
 // =====================================================
 
-function getSapId() {
+function setDefaultPeriod() {
 
-    return String(
+    if (fromInput) {
 
-        session.sapId ||
+        fromInput.value =
+            "2026-07-10";
 
-        session.sapID ||
+    }
 
-        session.SAPID ||
+    if (toInput) {
 
-        session.userSap ||
+        toInput.value =
+            "2026-08-10";
 
-        session.userID ||
+    }
 
-        ""
+}
 
-    )
-    .trim();
+setDefaultPeriod();
+
+
+// =====================================================
+// AMBIL KONVERSI DARI DATA FIREBASE
+// =====================================================
+//
+// PENTING:
+//
+// Konversi TIDAK dihitung dari total jam.
+//
+// Contoh:
+//
+// Record 1:
+// hours = 2
+// conversionHours = 3.5
+//
+// Record 2:
+// hours = 4
+// conversionHours = 7.5
+//
+// Maka:
+//
+// total jam = 6
+// total konversi = 11
+//
+// =====================================================
+
+function getConversionHours(item) {
+
+    if (
+        item &&
+        item.conversionHours !== undefined &&
+        item.conversionHours !== null &&
+        item.conversionHours !== ""
+    ) {
+
+        const value =
+            Number(
+                item.conversionHours
+            );
+
+        if (
+            Number.isFinite(value)
+        ) {
+
+            return value;
+
+        }
+
+    }
+
+
+    // =================================================
+    // DATA LAMA
+    // =================================================
+
+    const value =
+        Number(
+            item?.hours || 0
+        );
+
+
+    const conversion = {
+
+        1: 1.5,
+
+        2: 3.5,
+
+        3: 5.5,
+
+        3.5: 6.5,
+
+        4: 7.5,
+
+        5: 9.5,
+
+        6: 11.5,
+
+        7: 14,
+
+        8: 16
+
+    };
+
+
+    return conversion[value] !== undefined
+
+        ? conversion[value]
+
+        : value;
 
 }
 
 
 // =====================================================
-// ESCAPE HTML
+// FORMAT ANGKA
 // =====================================================
 
-function escapeHtml(value) {
+function formatNumber(value) {
 
-    return String(
-        value ?? ""
-    )
+    const number =
+        Number(value || 0);
 
-    .replace(
-        /&/g,
-        "&amp;"
-    )
 
-    .replace(
-        /</g,
-        "&lt;"
-    )
+    if (
+        !Number.isFinite(number)
+    ) {
 
-    .replace(
-        />/g,
-        "&gt;"
-    )
+        return "0";
 
-    .replace(
-        /"/g,
-        "&quot;"
-    )
+    }
 
-    .replace(
-        /'/g,
-        "&#039;"
-    );
+
+    return Number(
+        number.toFixed(2)
+    ).toString();
 
 }
 
 
 // =====================================================
-// FORMAT DATE
+// FORMAT TANGGAL
 // =====================================================
 
 function formatDate(value) {
 
     if (!value) {
+
         return "-";
+
     }
+
 
     const parts =
         String(value).split("-");
 
+
     if (
         parts.length !== 3
     ) {
+
         return value;
+
     }
+
 
     return (
         parts[2] +
@@ -190,233 +270,6 @@ function formatDate(value) {
         parts[1] +
         "-" +
         parts[0]
-    );
-}
-
-
-// =====================================================
-// DEFAULT DATE
-// =====================================================
-
-function setDefaultDate() {
-
-    const today =
-        new Date();
-
-    const year =
-        today.getFullYear();
-
-    const month =
-        String(
-            today.getMonth() + 1
-        ).padStart(2, "0");
-
-    const day =
-        String(
-            today.getDate()
-        ).padStart(2, "0");
-
-    const current =
-        `${year}-${month}-${day}`;
-
-    fromInput.value =
-        current;
-
-    toInput.value =
-        current;
-}
-
-
-// =====================================================
-// LOAD OVERTIME
-// =====================================================
-
-async function loadOvertime() {
-
-    const sapId =
-        getSapId();
-
-
-    if (!sapId) {
-
-        throw new Error(
-            "SAP ID user tidak ditemukan."
-        );
-
-    }
-
-
-    const snapshot =
-        await get(
-            ref(
-                db,
-                "overtime"
-            )
-        );
-
-
-    if (!snapshot.exists()) {
-
-        overtimeData = [];
-
-        return;
-
-    }
-
-
-    const raw =
-        snapshot.val();
-
-
-    overtimeData = [];
-
-
-    Object.entries(raw)
-        .forEach(
-            ([key, item]) => {
-
-                if (!item) {
-                    return;
-                }
-
-
-                // =========================================
-                // SAP ID DATA
-                // =========================================
-
-                const itemSap =
-                    String(
-
-                        item.userSap ??
-
-                        item.sapId ??
-
-                        item.sapID ??
-
-                        item.userSapId ??
-
-                        item.userId ??
-
-                        item.userID ??
-
-                        ""
-
-                    )
-                    .trim();
-
-
-                // =========================================
-                // HANYA USER LOGIN
-                // =========================================
-
-                if (
-                    itemSap !== sapId
-                ) {
-
-                    return;
-
-                }
-
-
-                // =========================================
-                // TANGGAL
-                // =========================================
-
-                const date =
-                    String(
-
-                        item.date ??
-
-                        item.tanggal ??
-
-                        ""
-
-                    )
-                    .trim();
-
-
-                if (!date) {
-                    return;
-                }
-
-
-                // =========================================
-                // JAM
-                // =========================================
-
-                let hours =
-                    Number(
-
-                        item.hours ??
-
-                        item.jam ??
-
-                        item.jumlahJam ??
-
-                        item.totalHours ??
-
-                        0
-
-                    );
-
-
-                if (
-                    !Number.isFinite(
-                        hours
-                    )
-                ) {
-
-                    hours = 0;
-
-                }
-
-
-                // =========================================
-                // KETERANGAN
-                // =========================================
-
-                const note =
-                    String(
-
-                        item.keterangan ??
-
-                        item.note ??
-
-                        item.description ??
-
-                        item.remark ??
-
-                        "-"
-
-                    )
-                    .trim();
-
-
-                overtimeData.push({
-
-                    key,
-
-                    date,
-
-                    hours,
-
-                    note
-
-                });
-
-            }
-        );
-
-
-    // =====================================================
-    // SORT
-    // =====================================================
-
-    overtimeData.sort(
-        (a, b) =>
-            a.date.localeCompare(
-                b.date
-            )
     );
 
 }
@@ -429,69 +282,136 @@ async function loadOvertime() {
 function getFilteredData() {
 
     const from =
-        fromInput.value;
+        String(
+            fromInput?.value || ""
+        ).trim();
+
 
     const to =
-        toInput.value;
+        String(
+            toInput?.value || ""
+        ).trim();
 
 
-    if (
-        !from ||
-        !to
-    ) {
+    return overtime
 
-        return [];
+        .filter(item => {
 
-    }
-
-
-    if (
-        from > to
-    ) {
-
-        return null;
-
-    }
+            const date =
+                String(
+                    item?.date || ""
+                ).trim();
 
 
-    return overtimeData.filter(
-        item => {
+            if (
+                from &&
+                date < from
+            ) {
+
+                return false;
+
+            }
+
+
+            if (
+                to &&
+                date > to
+            ) {
+
+                return false;
+
+            }
+
+
+            // USER HANYA MELIHAT DATA SENDIRI
+            // ADMIN MELIHAT SEMUA DATA
+
+            if (
+                String(
+                    session.role || ""
+                ).toLowerCase() ===
+                "admin"
+            ) {
+
+                return true;
+
+            }
+
 
             return (
-                item.date >= from &&
-                item.date <= to
+                String(
+                    item?.userSap || ""
+                ).trim() ===
+
+                String(
+                    session.sapId || ""
+                ).trim()
             );
 
-        }
-    );
+        })
+
+        .sort(
+            (a, b) =>
+                String(
+                    b.date || ""
+                ).localeCompare(
+                    String(
+                        a.date || ""
+                    )
+                )
+        );
 
 }
 
 
 // =====================================================
-// TOTAL JAM
+// HITUNG TOTAL
+// =====================================================
+//
+// TOTAL DILAKUKAN DARI RINCIAN.
+//
+// BUKAN:
+//
+// calculateConversion(totalHours)
+//
+// TETAPI:
+//
+// conversion record 1
+// + conversion record 2
+// + conversion record 3
+//
 // =====================================================
 
-function getTotalHours(
-    data
-) {
+function calculateTotals(data) {
 
-    return data.reduce(
-        (
-            total,
-            item
-        ) => {
+    let totalHours = 0;
 
-            return (
-                total +
-                Number(
-                    item.hours || 0
-                )
+    let totalConversion = 0;
+
+
+    data.forEach(item => {
+
+        totalHours +=
+            Number(
+                item?.hours || 0
             );
 
-        },
-        0
-    );
+
+        totalConversion +=
+            getConversionHours(
+                item
+            );
+
+    });
+
+
+    return {
+
+        totalHours,
+
+        totalConversion
+
+    };
 
 }
 
@@ -502,133 +422,310 @@ function getTotalHours(
 
 function render() {
 
+    if (!rows) {
+
+        return;
+
+    }
+
+
     const data =
         getFilteredData();
 
 
-    if (data === null) {
-
-        countEl.textContent =
-            "0";
-
-        hoursEl.textContent =
-            "0";
-
-        infoEl.textContent =
-            "Tanggal Dari tidak boleh lebih besar dari tanggal Sampai.";
-
-        rowsEl.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="4"
-                    class="empty"
-                >
-                    Periksa kembali periode tanggal.
-                </td>
-
-            </tr>
-
-        `;
-
-        return;
-    }
-
-
-    const total =
-        getTotalHours(
+    const totals =
+        calculateTotals(
             data
         );
 
 
-    countEl.textContent =
-        data.length;
+    // =================================================
+    // CARD TOTAL DATA
+    // =================================================
 
-    hoursEl.textContent =
-        total;
+    if (count) {
+
+        count.textContent =
+            data.length;
+
+    }
 
 
-    periodLabel.textContent =
-        `Periode: ${
+    // =================================================
+    // CARD TOTAL JAM
+    // =================================================
+
+    if (hours) {
+
+        hours.textContent =
+            formatNumber(
+                totals.totalHours
+            );
+
+    }
+
+
+    // =================================================
+    // CARD KONVERSI
+    // =================================================
+
+    if (conversion) {
+
+        conversion.textContent =
+            formatNumber(
+                totals.totalConversion
+            );
+
+    }
+
+
+    // =================================================
+    // LABEL PERIODE
+    // =================================================
+
+    if (periodLabel) {
+
+        periodLabel.textContent =
+            "Periode: " +
             formatDate(
-                fromInput.value
-            )
-        } s/d ${
+                fromInput?.value
+            ) +
+            " s/d " +
             formatDate(
-                toInput.value
-            )
-        }`;
+                toInput?.value
+            );
+
+    }
 
 
-    infoEl.textContent =
-        `Menampilkan ${data.length} data overtime.`;
+    // =================================================
+    // INFORMASI
+    // =================================================
+
+    if (info) {
+
+        info.textContent =
+            data.length +
+            " data · " +
+            formatNumber(
+                totals.totalHours
+            ) +
+            " jam · " +
+            formatNumber(
+                totals.totalConversion
+            ) +
+            " jam konversi";
+
+    }
 
 
-    if (
-        data.length === 0
-    ) {
+    // =================================================
+    // DATA KOSONG
+    // =================================================
 
-        rowsEl.innerHTML = `
+    if (data.length === 0) {
+
+        rows.innerHTML = `
 
             <tr>
 
                 <td
-                    colspan="4"
+                    colspan="5"
                     class="empty"
                 >
-                    Tidak ada data overtime pada periode yang dipilih.
+
+                    Tidak ada data overtime
+                    pada periode yang dipilih.
+
                 </td>
 
             </tr>
 
         `;
 
-        return;
+    } else {
+
+        rows.innerHTML =
+
+            data.map(
+
+                (item, index) => {
+
+                    const itemHours =
+                        Number(
+                            item?.hours || 0
+                        );
+
+
+                    const itemConversion =
+                        getConversionHours(
+                            item
+                        );
+
+
+                    return `
+
+                        <tr>
+
+                            <td>
+                                ${index + 1}
+                            </td>
+
+                            <td>
+                                ${esc(
+                                    formatDate(
+                                        item.date
+                                    )
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    itemHours
+                                )}
+                            </td>
+
+                            <td>
+                                ${formatNumber(
+                                    itemConversion
+                                )}
+                            </td>
+
+                            <td>
+                                ${esc(
+                                    item.note || ""
+                                )}
+                            </td>
+
+                        </tr>
+
+                    `;
+
+                }
+
+            ).join("");
+
     }
 
 
-    rowsEl.innerHTML =
-        data
-        .map(
-            (
-                item,
-                index
-            ) => {
+    // =================================================
+    // FOOTER TOTAL JAM
+    // =================================================
 
-                return `
+    if (tableTotalHours) {
 
-                    <tr>
+        tableTotalHours.textContent =
+            formatNumber(
+                totals.totalHours
+            );
 
-                        <td>
-                            ${index + 1}
-                        </td>
+    }
 
-                        <td>
-                            ${escapeHtml(
-                                formatDate(
-                                    item.date
-                                )
-                            )}
-                        </td>
 
-                        <td>
-                            ${item.hours}
-                        </td>
+    // =================================================
+    // FOOTER TOTAL KONVERSI
+    // =================================================
 
-                        <td>
-                            ${escapeHtml(
-                                item.note
-                            )}
-                        </td>
+    if (tableTotalConversion) {
 
-                    </tr>
+        tableTotalConversion.textContent =
+            formatNumber(
+                totals.totalConversion
+            );
 
-                `;
+    }
 
-            }
-        )
-        .join("");
+}
+
+
+// =====================================================
+// LOAD FIREBASE
+// =====================================================
+
+async function loadData() {
+
+    try {
+
+        const snapshot =
+            await get(
+                ref(
+                    db,
+                    "overtime"
+                )
+            );
+
+
+        if (
+            snapshot.exists()
+        ) {
+
+            const data =
+                snapshot.val();
+
+
+            overtime =
+                Object.entries(
+                    data
+                ).map(
+                    ([id, value]) => ({
+
+                        id,
+
+                        ...(value || {})
+
+                    })
+                );
+
+        } else {
+
+            overtime = [];
+
+        }
+
+
+        render();
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil overtime:",
+            error
+        );
+
+
+        overtime = [];
+
+
+        if (rows) {
+
+            rows.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="5"
+                        class="empty"
+                        style="color:red"
+                    >
+
+                        Gagal membaca data overtime.
+
+                        <br><br>
+
+                        ${esc(
+                            error.message ||
+                            "Unknown error"
+                        )}
+
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+
+    }
 
 }
 
@@ -637,370 +734,163 @@ function render() {
 // FILTER BUTTON
 // =====================================================
 
-filterBtn.addEventListener(
-    "click",
-    render
-);
+if (filterBtn) {
 
-
-// =====================================================
-// RESET
-// =====================================================
-
-resetBtn.addEventListener(
-    "click",
-    () => {
-
-        setDefaultDate();
-
-        render();
-
-    }
-);
-
-
-// =====================================================
-// DOWNLOAD EXCEL
-// TANPA LIBRARY
-// =====================================================
-
-function downloadExcel() {
-
-    const data =
-        getFilteredData();
-
-
-    if (data === null) {
-
-        alert(
-            "Tanggal Dari tidak boleh lebih besar dari tanggal Sampai."
-        );
-
-        return;
-    }
-
-
-    if (
-        data.length === 0
-    ) {
-
-        alert(
-            "Tidak ada data overtime pada periode yang dipilih."
-        );
-
-        return;
-    }
-
-
-    const total =
-        getTotalHours(
-            data
-        );
-
-
-    const from =
-        fromInput.value;
-
-    const to =
-        toInput.value;
-
-
-    // =================================================
-    // BUAT HTML UNTUK EXCEL
-    // =================================================
-
-    let html = `
-
-<html>
-
-<head>
-
-<meta charset="UTF-8">
-
-</head>
-
-<body>
-
-<h2>AKUMULASI OVERTIME</h2>
-
-<table border="1">
-
-<tr>
-
-<td><b>SAP ID</b></td>
-
-<td>
-${escapeHtml(
-    getSapId()
-)}
-</td>
-
-</tr>
-
-<tr>
-
-<td><b>Nama</b></td>
-
-<td>
-${escapeHtml(
-    session.name || "-"
-)}
-</td>
-
-</tr>
-
-<tr>
-
-<td><b>Periode</b></td>
-
-<td>
-${formatDate(from)}
-s/d
-${formatDate(to)}
-</td>
-
-</tr>
-
-</table>
-
-<br>
-
-<table border="1">
-
-<thead>
-
-<tr>
-
-<th>No</th>
-
-<th>Tanggal</th>
-
-<th>Jam</th>
-
-<th>Keterangan</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-`;
-
-
-    data.forEach(
-        (
-            item,
-            index
-        ) => {
-
-            html += `
-
-<tr>
-
-<td>
-${index + 1}
-</td>
-
-<td>
-${escapeHtml(
-    formatDate(
-        item.date
-    )
-)}
-</td>
-
-<td>
-${item.hours}
-</td>
-
-<td>
-${escapeHtml(
-    item.note
-)}
-</td>
-
-</tr>
-
-`;
-
-        }
-    );
-
-
-    html += `
-
-<tr>
-
-<td colspan="2">
-
-<b>GRAND TOTAL</b>
-
-</td>
-
-<td>
-
-<b>
-${total}
-</b>
-
-</td>
-
-<td>
-
-<b>
-Jam
-</b>
-
-</td>
-
-</tr>
-
-</tbody>
-
-</table>
-
-</body>
-
-</html>
-`;
-
-
-    // =================================================
-    // BLOB EXCEL
-    // =================================================
-
-    const blob =
-        new Blob(
-            [html],
-            {
-                type:
-                    "application/vnd.ms-excel"
-            }
-        );
-
-
-    const url =
-        URL.createObjectURL(
-            blob
-        );
-
-
-    const a =
-        document.createElement(
-            "a"
-        );
-
-
-    a.href =
-        url;
-
-    a.download =
-        `Akumulasi-Overtime-${from}-${to}.xls`;
-
-    a.style.display =
-        "none";
-
-
-    document.body.appendChild(
-        a
-    );
-
-
-    a.click();
-
-
-    setTimeout(
+    filterBtn.addEventListener(
+        "click",
         () => {
 
-            document.body.removeChild(
-                a
-            );
+            render();
 
-            URL.revokeObjectURL(
-                url
-            );
-
-        },
-        1000
+        }
     );
 
 }
 
 
 // =====================================================
-// LOAD jsPDF
+// RESET
 // =====================================================
 
-function loadJsPDF() {
+if (resetBtn) {
 
-    return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
+    resetBtn.addEventListener(
+        "click",
+        () => {
+
+            setDefaultPeriod();
+
+            render();
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// DOWNLOAD EXCEL
+// =====================================================
+
+if (downloadExcelBtn) {
+
+    downloadExcelBtn.addEventListener(
+        "click",
+        () => {
 
             if (
-                window.jspdf &&
-                window.jspdf.jsPDF
+                typeof XLSX ===
+                "undefined"
             ) {
 
-                resolve(
-                    window.jspdf.jsPDF
+                alert(
+                    "Library Excel belum dimuat."
                 );
 
                 return;
+
             }
 
 
-            const script =
-                document.createElement(
-                    "script"
+            const data =
+                getFilteredData();
+
+
+            if (
+                data.length === 0
+            ) {
+
+                alert(
+                    "Tidak ada data untuk diekspor."
+                );
+
+                return;
+
+            }
+
+
+            const exportData =
+
+                data.map(
+
+                    (item, index) => ({
+
+                        No:
+                            index + 1,
+
+                        Tanggal:
+                            item.date || "",
+
+                        Jam:
+                            Number(
+                                item.hours || 0
+                            ),
+
+                        "Konversi Lembur":
+                            getConversionHours(
+                                item
+                            ),
+
+                        Keterangan:
+                            item.note || ""
+
+                    })
+
                 );
 
 
-            script.src =
-                "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+            const totals =
+                calculateTotals(
+                    data
+                );
 
 
-            script.onload =
-                () => {
+            exportData.push({
 
-                    if (
-                        window.jspdf &&
-                        window.jspdf.jsPDF
-                    ) {
+                No: "",
 
-                        resolve(
-                            window.jspdf.jsPDF
-                        );
+                Tanggal: "",
 
-                    } else {
+                Jam:
+                    totals.totalHours,
 
-                        reject(
-                            new Error(
-                                "jsPDF tidak tersedia."
-                            )
-                        );
+                "Konversi Lembur":
+                    totals.totalConversion,
 
-                    }
+                Keterangan:
+                    "TOTAL"
 
-                };
+            });
 
 
-            script.onerror =
-                () => {
-
-                    reject(
-                        new Error(
-                            "Gagal memuat jsPDF."
-                        )
-                    );
-
-                };
+            const worksheet =
+                XLSX.utils.json_to_sheet(
+                    exportData
+                );
 
 
-            document.head.appendChild(
-                script
+            const workbook =
+                XLSX.utils.book_new();
+
+
+            XLSX.utils.book_append_sheet(
+                workbook,
+                worksheet,
+                "Akumulasi Overtime"
+            );
+
+
+            XLSX.writeFile(
+                workbook,
+                "akumulasi-overtime-" +
+                (
+                    fromInput?.value || ""
+                ) +
+                "-sampai-" +
+                (
+                    toInput?.value || ""
+                ) +
+                ".xlsx"
             );
 
         }
@@ -1013,485 +903,200 @@ function loadJsPDF() {
 // DOWNLOAD PDF
 // =====================================================
 
-async function downloadPdf() {
-
-    const data =
-        getFilteredData();
-
-
-    if (data === null) {
-
-        alert(
-            "Tanggal Dari tidak boleh lebih besar dari tanggal Sampai."
-        );
-
-        return;
-    }
-
-
-    if (
-        data.length === 0
-    ) {
-
-        alert(
-            "Tidak ada data overtime pada periode yang dipilih."
-        );
-
-        return;
-    }
-
-
-    try {
-
-        const jsPDF =
-            await loadJsPDF();
-
-
-        const doc =
-            new jsPDF(
-                "portrait",
-                "mm",
-                "a4"
-            );
-
-
-        const from =
-            fromInput.value;
-
-        const to =
-            toInput.value;
-
-
-        const total =
-            getTotalHours(
-                data
-            );
-
-
-        // =================================================
-        // HEADER
-        // =================================================
-
-        doc.setFontSize(
-            16
-        );
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
-
-        doc.text(
-            "AKUMULASI OVERTIME",
-            14,
-            18
-        );
-
-
-        doc.setFontSize(
-            10
-        );
-
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-
-        doc.text(
-            `SAP ID: ${getSapId()}`,
-            14,
-            27
-        );
-
-
-        doc.text(
-            `Nama: ${session.name || "-"}`,
-            14,
-            33
-        );
-
-
-        doc.text(
-            `Periode: ${formatDate(from)} s/d ${formatDate(to)}`,
-            14,
-            39
-        );
-
-
-        // =================================================
-        // TABLE
-        // =================================================
-
-        let y = 50;
-
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
-
-        doc.rect(
-            14,
-            y - 6,
-            182,
-            8
-        );
-
-
-        doc.text(
-            "No",
-            16,
-            y
-        );
-
-
-        doc.text(
-            "Tanggal",
-            30,
-            y
-        );
-
-
-        doc.text(
-            "Jam",
-            65,
-            y
-        );
-
-
-        doc.text(
-            "Keterangan",
-            85,
-            y
-        );
-
-
-        y += 8;
-
-
-        doc.setFont(
-            "helvetica",
-            "normal"
-        );
-
-
-        data.forEach(
-            (
-                item,
-                index
-            ) => {
-
-                if (
-                    y > 275
-                ) {
-
-                    doc.addPage();
-
-                    y = 20;
-
-
-                    doc.setFont(
-                        "helvetica",
-                        "bold"
-                    );
-
-
-                    doc.rect(
-                        14,
-                        y - 6,
-                        182,
-                        8
-                    );
-
-
-                    doc.text(
-                        "No",
-                        16,
-                        y
-                    );
-
-
-                    doc.text(
-                        "Tanggal",
-                        30,
-                        y
-                    );
-
-
-                    doc.text(
-                        "Jam",
-                        65,
-                        y
-                    );
-
-
-                    doc.text(
-                        "Keterangan",
-                        85,
-                        y
-                    );
-
-
-                    y += 8;
-
-
-                    doc.setFont(
-                        "helvetica",
-                        "normal"
-                    );
-
-                }
-
-
-                const note =
-                    String(
-                        item.note || "-"
-                    );
-
-
-                const shortNote =
-                    note.length > 60
-
-                    ? note.substring(
-                        0,
-                        60
-                    ) + "..."
-
-                    : note;
-
-
-                doc.rect(
-                    14,
-                    y - 6,
-                    182,
-                    8
-                );
-
-
-                doc.text(
-                    String(
-                        index + 1
-                    ),
-                    16,
-                    y
-                );
-
-
-                doc.text(
-                    formatDate(
-                        item.date
-                    ),
-                    30,
-                    y
-                );
-
-
-                doc.text(
-                    String(
-                        item.hours
-                    ),
-                    65,
-                    y
-                );
-
-
-                doc.text(
-                    shortNote,
-                    85,
-                    y
-                );
-
-
-                y += 8;
-
-            }
-        );
-
-
-        // =================================================
-        // GRAND TOTAL
-        // =================================================
-
-        if (
-            y > 270
-        ) {
-
-            doc.addPage();
-
-            y = 20;
-
-        }
-
-
-        y += 5;
-
-
-        doc.setFont(
-            "helvetica",
-            "bold"
-        );
-
-
-        doc.rect(
-            14,
-            y - 6,
-            182,
-            9
-        );
-
-
-        doc.text(
-            "GRAND TOTAL",
-            30,
-            y
-        );
-
-
-        doc.text(
-            String(total),
-            65,
-            y
-        );
-
-
-        doc.text(
-            "Jam",
-            85,
-            y
-        );
-
-
-        // =================================================
-        // DOWNLOAD
-        // =================================================
-
-        doc.save(
-            `Akumulasi-Overtime-${from}-${to}.pdf`
-        );
-
-    } catch (error) {
-
-        console.error(
-            "PDF ERROR:",
-            error
-        );
-
-
-        alert(
-            "PDF gagal dibuat. Periksa koneksi internet kemudian coba lagi."
-        );
-
-    }
-
-}
-
-
-// =====================================================
-// EVENT DOWNLOAD EXCEL
-// =====================================================
-
-if (
-    downloadExcelBtn
-) {
-
-    downloadExcelBtn.addEventListener(
-        "click",
-        downloadExcel
-    );
-
-}
-
-
-// =====================================================
-// EVENT DOWNLOAD PDF
-// =====================================================
-
-if (
-    downloadPdfBtn
-) {
+if (downloadPdfBtn) {
 
     downloadPdfBtn.addEventListener(
         "click",
-        downloadPdf
+        () => {
+
+            if (
+                !window.jspdf ||
+                !window.jspdf.jsPDF
+            ) {
+
+                alert(
+                    "Library PDF belum dimuat."
+                );
+
+                return;
+
+            }
+
+
+            const data =
+                getFilteredData();
+
+
+            if (
+                data.length === 0
+            ) {
+
+                alert(
+                    "Tidak ada data untuk diekspor."
+                );
+
+                return;
+
+            }
+
+
+            const {
+                jsPDF
+            } = window.jspdf;
+
+
+            const doc =
+                new jsPDF(
+                    "landscape"
+                );
+
+
+            const totals =
+                calculateTotals(
+                    data
+                );
+
+
+            doc.setFontSize(16);
+
+            doc.text(
+                "Akumulasi Overtime",
+                14,
+                15
+            );
+
+
+            doc.setFontSize(10);
+
+            doc.text(
+                "Periode: " +
+                formatDate(
+                    fromInput?.value
+                ) +
+                " s/d " +
+                formatDate(
+                    toInput?.value
+                ),
+                14,
+                22
+            );
+
+
+            if (
+                typeof doc.autoTable !==
+                "function"
+            ) {
+
+                alert(
+                    "Plugin AutoTable belum dimuat."
+                );
+
+                return;
+
+            }
+
+
+            doc.autoTable({
+
+                startY: 28,
+
+                head: [
+
+                    [
+
+                        "No",
+
+                        "Tanggal",
+
+                        "Jam",
+
+                        "Konversi Lembur",
+
+                        "Keterangan"
+
+                    ]
+
+                ],
+
+                body:
+
+                    data.map(
+
+                        (item, index) => [
+
+                            index + 1,
+
+                            formatDate(
+                                item.date
+                            ),
+
+                            formatNumber(
+                                item.hours
+                            ),
+
+                            formatNumber(
+                                getConversionHours(
+                                    item
+                                )
+                            ),
+
+                            item.note || ""
+
+                        ]
+
+                    ),
+
+                foot: [
+
+                    [
+
+                        "",
+
+                        "TOTAL",
+
+                        formatNumber(
+                            totals.totalHours
+                        ),
+
+                        formatNumber(
+                            totals.totalConversion
+                        ),
+
+                        ""
+
+                    ]
+
+                ],
+
+                styles: {
+
+                    fontSize: 9
+
+                }
+
+            });
+
+
+            doc.save(
+                "akumulasi-overtime-" +
+                (
+                    fromInput?.value || ""
+                ) +
+                "-sampai-" +
+                (
+                    toInput?.value || ""
+                ) +
+                ".pdf"
+            );
+
+        }
     );
 
 }
 
 
 // =====================================================
-// START
+// INIT
 // =====================================================
 
-async function init() {
-
-    try {
-
-        rowsEl.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="4"
-                    class="empty"
-                >
-                    Memuat data...
-                </td>
-
-            </tr>
-
-        `;
-
-
-        await loadOvertime();
-
-
-        setDefaultDate();
-
-
-        render();
-
-
-    } catch (error) {
-
-        console.error(
-            "Akumulasi error:",
-            error
-        );
-
-
-        countEl.textContent =
-            "0";
-
-        hoursEl.textContent =
-            "0";
-
-
-        infoEl.textContent =
-            error.message ||
-            "Gagal membaca data overtime.";
-
-
-        rowsEl.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="4"
-                    class="empty"
-                >
-                    Gagal membaca data dari Firebase.
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-
-}
-
-
-init();
+loadData();
