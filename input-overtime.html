@@ -18,11 +18,20 @@
         href="css/style.css"
     >
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- XLSX -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+    ></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- JSPDF -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    ></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- JSPDF AUTOTABLE -->
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"
+    ></script>
 
 </head>
 
@@ -32,7 +41,6 @@
 
     <!-- =====================================================
          NAVIGASI
-         Icon menu dibuat oleh nav.js
     ====================================================== -->
 
     <div id="nav"></div>
@@ -297,6 +305,145 @@
 
 
         <!-- =================================================
+             UPLOAD EXCEL
+        ================================================== -->
+
+        <div class="panel">
+
+
+            <div class="page-head">
+
+                <h3>
+                    📥 Upload Data Overtime dari Excel
+                </h3>
+
+            </div>
+
+
+
+            <div class="notice">
+
+                ℹ️
+                Gunakan fitur ini untuk memasukkan banyak
+                data overtime sekaligus tanpa input satu per satu.
+
+                <br><br>
+
+                Format file yang didukung:
+                <strong>.xlsx</strong> dan
+                <strong>.xls</strong>.
+
+            </div>
+
+
+
+            <!-- AKSI EXCEL -->
+
+            <div
+                class="actions"
+                style="
+                    margin-top:15px;
+                    display:flex;
+                    gap:10px;
+                    align-items:center;
+                    flex-wrap:wrap;
+                "
+            >
+
+
+                <input
+                    type="file"
+                    id="excelFile"
+                    accept=".xlsx,.xls"
+                >
+
+
+
+                <button
+                    type="button"
+                    id="uploadExcelBtn"
+                >
+
+                    📤 Upload Excel
+
+                </button>
+
+
+
+                <button
+                    type="button"
+                    class="secondary"
+                    id="downloadTemplateBtn"
+                >
+
+                    📥 Download Template Excel
+
+                </button>
+
+
+            </div>
+
+
+
+            <!-- PESAN EXCEL -->
+
+            <div
+                id="excelMsg"
+                class="message"
+                style="margin-top:10px"
+            ></div>
+
+
+
+            <!-- INFORMASI FORMAT -->
+
+            <div
+                style="
+                    margin-top:15px;
+                    font-size:13px;
+                    line-height:1.6;
+                "
+            >
+
+                <strong>
+                    Format kolom Excel:
+                </strong>
+
+                <br>
+
+                <code>
+                    Tanggal | SAP | Kategori | Mulai | Selesai | Jam | Keterangan
+                </code>
+
+                <br><br>
+
+                <strong>
+                    Contoh:
+                </strong>
+
+                <br>
+
+                <code>
+                    2026-08-20 | 10001 | IOR1 | 13:00 | 15:00 | 2 | Overtime
+                </code>
+
+                <br><br>
+
+                Kolom
+                <strong>Konversi</strong>
+                tidak wajib diisi.
+
+                Jika dikosongkan, sistem akan
+                menghitung konversi otomatis.
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================================
              DATA OVERTIME
         ================================================== -->
 
@@ -326,6 +473,45 @@
 
 
             <!-- =================================================
+                 AKSI DATA TERPILIH
+            ================================================== -->
+
+            <div
+                class="actions"
+                style="
+                    margin-bottom:15px;
+                    display:flex;
+                    gap:10px;
+                    align-items:center;
+                    flex-wrap:wrap;
+                "
+            >
+
+                <button
+                    type="button"
+                    class="danger"
+                    id="deleteSelectedBtn"
+                >
+
+                    🗑️ Hapus Terpilih
+
+                </button>
+
+
+                <span
+                    id="selectedCount"
+                    style="font-size:14px"
+                >
+
+                    0 data dipilih
+
+                </span>
+
+            </div>
+
+
+
+            <!-- =================================================
                  TABEL
             ================================================== -->
 
@@ -339,6 +525,24 @@
 
 
                         <tr>
+
+
+                            <!-- CHECKBOX PILIH SEMUA -->
+
+                            <th
+                                style="
+                                    width:45px;
+                                    text-align:center;
+                                "
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    id="selectAll"
+                                    title="Pilih semua"
+                                >
+
+                            </th>
 
 
                             <th>
