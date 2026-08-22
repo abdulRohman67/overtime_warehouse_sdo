@@ -179,12 +179,16 @@ function calculateHours(value) {
 
 
     if (total === 4) {
+
         return 3.5;
+
     }
 
 
     if (total === 11) {
+
         return 10.5;
+
     }
 
 
@@ -229,7 +233,9 @@ function calculateConversionHours(value) {
 
 
     return conversion[total] !== undefined
+
         ? conversion[total]
+
         : total;
 
 }
@@ -291,6 +297,19 @@ function formatNumber(value) {
 
 /* =====================================================
    KATEGORI BERUBAH
+=====================================================
+
+   INPUT BARU:
+   - kategori otomatis mengisi
+   - mulai otomatis
+   - selesai otomatis
+   - jumlah jam otomatis
+   - konversi otomatis
+
+   EDIT:
+   - kategori TIDAK menimpa field lain
+   - semua field tetap manual
+
 ===================================================== */
 
 if (category) {
@@ -298,6 +317,22 @@ if (category) {
     category.addEventListener(
         "change",
         () => {
+
+            /*
+             * Jika sedang EDIT,
+             * jangan otomatis mengubah data.
+             */
+
+            if (editId?.value) {
+
+                return;
+
+            }
+
+
+            /*
+             * MODE INPUT BARU
+             */
 
             const x =
                 overtimeCategory[
@@ -347,6 +382,15 @@ if (category) {
 
 /* =====================================================
    JUMLAH JAM BERUBAH
+=====================================================
+
+   INPUT BARU:
+   Konversi otomatis.
+
+   EDIT:
+   Konversi TIDAK berubah otomatis.
+   User bebas menentukan konversinya.
+
 ===================================================== */
 
 if (hours) {
@@ -354,6 +398,25 @@ if (hours) {
     hours.addEventListener(
         "input",
         () => {
+
+            /*
+             * MODE EDIT
+             *
+             * Jangan mengubah conversionHours.
+             */
+
+            if (editId?.value) {
+
+                return;
+
+            }
+
+
+            /*
+             * MODE INPUT BARU
+             *
+             * Hitung otomatis.
+             */
 
             const inputHours =
                 Number(
@@ -497,7 +560,9 @@ onValue(
 function render() {
 
     if (!rows) {
+
         return;
+
     }
 
 
@@ -752,7 +817,7 @@ function restoreSelectedCheckboxes() {
 
 
 /* =====================================================
-   UPDATE JUMLAH
+   UPDATE JUMLAH CHECKBOX
 ===================================================== */
 
 function updateSelectedCount() {
@@ -907,6 +972,17 @@ if (search) {
 
 /* =====================================================
    SIMPAN MANUAL
+=====================================================
+
+   INI BAGIAN UTAMA PERBAIKAN.
+
+   INPUT BARU:
+   hours + conversion otomatis.
+
+   EDIT:
+   hours + conversion menggunakan
+   nilai manual dari form.
+
 ===================================================== */
 
 if (otForm) {
@@ -918,13 +994,30 @@ if (otForm) {
             e.preventDefault();
 
 
+            /*
+             * Apakah sedang edit?
+             */
+
+            const isEdit =
+                Boolean(
+                    editId?.value
+                );
+
+
+            /* =============================================
+               JUMLAH JAM
+            ============================================== */
+
             const inputHours =
                 Number(
                     hours?.value
-                ) || 0;
+                );
 
 
-            if (inputHours <= 0) {
+            if (
+                !Number.isFinite(inputHours) ||
+                inputHours <= 0
+            ) {
 
                 alert(
                     "Jumlah jam overtime harus lebih dari 0."
@@ -935,17 +1028,94 @@ if (otForm) {
             }
 
 
-            const totalHours =
-                calculateHours(
-                    inputHours
-                );
+            let finalHours;
+
+            let finalConversionHours;
 
 
-            const totalConversionHours =
-                calculateConversionHours(
-                    totalHours
-                );
+            /* =============================================
+               MODE EDIT
+            ============================================== */
 
+            if (isEdit) {
+
+                /*
+                 * Saat EDIT:
+                 *
+                 * Simpan jumlah jam persis
+                 * seperti yang diketik user.
+                 */
+
+                finalHours =
+                    inputHours;
+
+
+                /*
+                 * Saat EDIT:
+                 *
+                 * Simpan konversi persis
+                 * seperti yang diketik user.
+                 */
+
+                const inputConversion =
+                    Number(
+                        conversionHours?.value
+                    );
+
+
+                if (
+                    !Number.isFinite(
+                        inputConversion
+                    ) ||
+                    inputConversion < 0
+                ) {
+
+                    alert(
+                        "Konversi Jam tidak valid."
+                    );
+
+                    return;
+
+                }
+
+
+                finalConversionHours =
+                    inputConversion;
+
+            }
+
+
+            /* =============================================
+               MODE INPUT BARU
+            ============================================== */
+
+            else {
+
+                /*
+                 * Jumlah jam otomatis
+                 */
+
+                finalHours =
+                    calculateHours(
+                        inputHours
+                    );
+
+
+                /*
+                 * Konversi otomatis
+                 */
+
+                finalConversionHours =
+                    calculateConversionHours(
+                        finalHours
+                    );
+
+            }
+
+
+            /* =============================================
+               TANGGAL
+            ============================================== */
 
             const finalDate =
                 String(
@@ -964,6 +1134,52 @@ if (otForm) {
             }
 
 
+            /* =============================================
+               USER
+            ============================================== */
+
+            const finalUserSap =
+                String(
+                    userSap?.value || ""
+                ).trim();
+
+
+            if (!finalUserSap) {
+
+                alert(
+                    "User tujuan harus dipilih."
+                );
+
+                return;
+
+            }
+
+
+            /* =============================================
+               KATEGORI
+            ============================================== */
+
+            const finalCategory =
+                String(
+                    category?.value || ""
+                ).trim();
+
+
+            if (!finalCategory) {
+
+                alert(
+                    "Kategori overtime harus dipilih."
+                );
+
+                return;
+
+            }
+
+
+            /* =============================================
+               DATA FIREBASE
+            ============================================== */
+
             const data = {
 
                 date:
@@ -975,17 +1191,28 @@ if (otForm) {
                 end:
                     end?.value || "",
 
+                /*
+                 * Nilai jumlah jam final
+                 */
+
                 hours:
-                    totalHours,
+                    finalHours,
+
+                /*
+                 * Nilai konversi final
+                 *
+                 * INPUT BARU = otomatis
+                 * EDIT       = manual
+                 */
 
                 conversionHours:
-                    totalConversionHours,
+                    finalConversionHours,
 
                 userSap:
-                    userSap?.value || "",
+                    finalUserSap,
 
                 category:
-                    category?.value || "",
+                    finalCategory,
 
                 note:
                     note?.value.trim() || "",
@@ -995,6 +1222,10 @@ if (otForm) {
 
             };
 
+
+            /* =============================================
+               ID DATA
+            ============================================== */
 
             const id =
 
@@ -1014,6 +1245,10 @@ if (otForm) {
                 ).key;
 
 
+            /* =============================================
+               SIMPAN
+            ============================================== */
+
             await set(
 
                 ref(
@@ -1026,16 +1261,36 @@ if (otForm) {
             );
 
 
+            /* =============================================
+               PESAN
+            ============================================== */
+
             if (msg) {
 
                 showMsg(
+
                     msg,
+
+                    isEdit
+
+                        ?
+
+                    "Data overtime berhasil diperbarui."
+
+                        :
+
                     "Data overtime berhasil disimpan.",
+
                     "ok"
+
                 );
 
             }
 
+
+            /* =============================================
+               RESET
+            ============================================== */
 
             reset();
 
@@ -1052,17 +1307,23 @@ if (otForm) {
 function reset() {
 
     if (otForm) {
+
         otForm.reset();
+
     }
 
 
     if (editId) {
+
         editId.value = "";
+
     }
 
 
     if (conversionHours) {
+
         conversionHours.value = "";
+
     }
 
 }
@@ -1168,9 +1429,9 @@ function getExcelValue(
 
 /* =====================================================
    FORMAT TANGGAL EXCEL
-   PENTING:
+
    TIDAK MENGGUNAKAN new Date()
-   UNTUK PARSING TANGGAL EXCEL.
+   UNTUK PARSING STRING EXCEL.
 ===================================================== */
 
 function formatExcelDate(value) {
@@ -1190,14 +1451,18 @@ function formatExcelDate(value) {
        STRING
     ================================================= */
 
-    if (typeof value === "string") {
+    if (
+        typeof value === "string"
+    ) {
 
         const stringValue =
             value.trim();
 
 
         if (!stringValue) {
+
             return "";
+
         }
 
 
@@ -1243,7 +1508,7 @@ function formatExcelDate(value) {
 
         /* ---------------------------------------------
            MM/DD/YY
-           
+
            Contoh:
            08/11/26
            menjadi:
@@ -1270,8 +1535,14 @@ function formatExcelDate(value) {
 
             const year =
                 shortYear >= 50
-                    ? 1900 + shortYear
-                    : 2000 + shortYear;
+
+                    ?
+
+                1900 + shortYear
+
+                    :
+
+                2000 + shortYear;
 
 
             if (
@@ -1379,14 +1650,6 @@ function formatExcelDate(value) {
 
     /* =================================================
        EXCEL SERIAL DATE
-
-       Contoh:
-       45880
-       45881
-       dst.
-
-       Diproses menggunakan XLSX.SSF
-       TANPA new Date().
     ================================================= */
 
     if (
@@ -1443,10 +1706,7 @@ function formatExcelDate(value) {
 
 
     /* =================================================
-       JIKA BENAR-BENAR Date
-       
-       Gunakan getFullYear/getMonth/getDate.
-       JANGAN menggunakan toISOString().
+       JAVASCRIPT DATE
     ================================================= */
 
     if (
@@ -1584,7 +1844,10 @@ function formatExcelTime(value) {
 
 
         if (totalMinutes < 0) {
-            totalMinutes += 24 * 60;
+
+            totalMinutes +=
+                24 * 60;
+
         }
 
 
@@ -1662,8 +1925,14 @@ function parseExcelNumber(value) {
     ) {
 
         return Number.isFinite(value)
-            ? value
-            : 0;
+
+            ?
+
+        value
+
+            :
+
+        0;
 
     }
 
@@ -1727,7 +1996,9 @@ function showExcelMsg(
 ) {
 
     if (!excelMsg) {
+
         return;
+
     }
 
 
@@ -1811,14 +2082,6 @@ async function uploadExcel() {
             await file.arrayBuffer();
 
 
-        /* =================================================
-           PENTING:
-           cellDates FALSE
-
-           Supaya tanggal tidak diubah menjadi
-           JavaScript Date yang rawan timezone.
-        ================================================= */
-
         const workbook =
             XLSX.read(
                 buffer,
@@ -1847,12 +2110,6 @@ async function uploadExcel() {
                 workbook.SheetNames[0]
             ];
 
-
-        /* =================================================
-           raw TRUE
-
-           Kita ingin nilai Excel asli.
-        ================================================= */
 
         const dataExcel =
             XLSX.utils.sheet_to_json(
@@ -2051,8 +2308,6 @@ async function uploadExcel() {
 
                 /* =========================================
                    TANGGAL
-
-                   INI BAGIAN PALING PENTING
                 ========================================== */
 
                 const finalDate =
@@ -2069,10 +2324,6 @@ async function uploadExcel() {
 
                 }
 
-
-                /* =========================================
-                   VALIDASI FORMAT FINAL
-                ========================================== */
 
                 if (
                     !/^\d{4}-\d{2}-\d{2}$/
@@ -2254,9 +2505,6 @@ async function uploadExcel() {
 
                 /* =========================================
                    DATA FIREBASE
-
-                   TANGGAL DISIMPAN SEBAGAI STRING
-                   YYYY-MM-DD
                 ========================================== */
 
                 const firebaseData = {
@@ -2357,7 +2605,9 @@ async function uploadExcel() {
 
 
         if (excelFile) {
+
             excelFile.value = "";
+
         }
 
 
@@ -2598,7 +2848,9 @@ if (deleteSelectedBtn) {
 
 
             if (!confirmed) {
+
                 return;
+
             }
 
 
@@ -2767,64 +3019,146 @@ if (rows) {
                     snapshot.val();
 
 
+                /*
+                 * Set EDIT MODE terlebih dahulu.
+                 *
+                 * Ini penting supaya event
+                 * perubahan kategori/jumlah jam
+                 * tidak menjalankan auto calculation.
+                 */
+
                 if (editId) {
-                    editId.value = ed;
+
+                    editId.value =
+                        ed;
+
                 }
 
+
+                /* =========================================
+                   TANGGAL
+                ========================================== */
 
                 if (date) {
+
                     date.value =
                         x?.date || "";
+
                 }
 
+
+                /* =========================================
+                   USER SAP
+                ========================================== */
 
                 if (userSap) {
+
                     userSap.value =
                         x?.userSap || "";
+
                 }
 
+
+                /* =========================================
+                   KATEGORI
+                ========================================== */
 
                 if (category) {
+
                     category.value =
                         x?.category || "";
+
                 }
 
+
+                /* =========================================
+                   JAM MULAI
+                ========================================== */
 
                 if (start) {
+
                     start.value =
                         x?.start || "";
+
                 }
 
+
+                /* =========================================
+                   JAM SELESAI
+                ========================================== */
 
                 if (end) {
+
                     end.value =
                         x?.end || "";
+
                 }
 
+
+                /* =========================================
+                   JUMLAH JAM
+
+                   NILAI ASLI DATABASE
+                   TIDAK DI-CALCULATE ULANG
+                ========================================== */
 
                 if (hours) {
+
                     hours.value =
-                        x?.hours || 0;
+                        x?.hours ?? "";
+
                 }
 
+
+                /* =========================================
+                   KONVERSI JAM
+
+                   NILAI ASLI DATABASE
+                   TIDAK DI-CALCULATE ULANG
+                ========================================== */
 
                 if (conversionHours) {
 
                     conversionHours.value =
-                        getConversionHours(x);
+                        x?.conversionHours !== undefined &&
+                        x?.conversionHours !== null &&
+                        x?.conversionHours !== ""
+
+                            ?
+
+                        x.conversionHours
+
+                            :
+
+                        calculateConversionHours(
+                            x?.hours || 0
+                        );
 
                 }
 
+
+                /* =========================================
+                   KETERANGAN
+                ========================================== */
 
                 if (note) {
+
                     note.value =
                         x?.note || "";
+
                 }
 
 
+                /* =========================================
+                   SCROLL KE FORM
+                ========================================== */
+
                 window.scrollTo({
+
                     top: 0,
+
                     behavior: "smooth"
+
                 });
 
             }
