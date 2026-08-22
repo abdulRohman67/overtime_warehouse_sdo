@@ -27,7 +27,6 @@ import {
 
 const s = requireLogin();
 
-
 if (
     !s ||
     String(s.role || "").toLowerCase() !== "admin"
@@ -49,6 +48,24 @@ if (
 let all = [];
 
 let users = {};
+
+
+/* =====================================================
+   MODE FORM
+===================================================== */
+
+/*
+    false = INPUT BARU
+    true  = EDIT
+
+    INPUT BARU:
+    Jam dan konversi otomatis.
+
+    EDIT:
+    Jam dan konversi manual.
+*/
+
+let isEditMode = false;
 
 
 /* =====================================================
@@ -179,16 +196,12 @@ function calculateHours(value) {
 
 
     if (total === 4) {
-
         return 3.5;
-
     }
 
 
     if (total === 11) {
-
         return 10.5;
-
     }
 
 
@@ -233,9 +246,7 @@ function calculateConversionHours(value) {
 
 
     return conversion[total] !== undefined
-
         ? conversion[total]
-
         : total;
 
 }
@@ -296,20 +307,35 @@ function formatNumber(value) {
 
 
 /* =====================================================
+   UPDATE MODE FORM
+===================================================== */
+
+function updateFormMode() {
+
+    if (!otForm) {
+        return;
+    }
+
+
+    if (isEditMode) {
+
+        otForm.classList.add(
+            "edit-mode"
+        );
+
+    } else {
+
+        otForm.classList.remove(
+            "edit-mode"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
    KATEGORI BERUBAH
-=====================================================
-
-   INPUT BARU:
-   - kategori otomatis mengisi
-   - mulai otomatis
-   - selesai otomatis
-   - jumlah jam otomatis
-   - konversi otomatis
-
-   EDIT:
-   - kategori TIDAK menimpa field lain
-   - semua field tetap manual
-
 ===================================================== */
 
 if (category) {
@@ -317,22 +343,6 @@ if (category) {
     category.addEventListener(
         "change",
         () => {
-
-            /*
-             * Jika sedang EDIT,
-             * jangan otomatis mengubah data.
-             */
-
-            if (editId?.value) {
-
-                return;
-
-            }
-
-
-            /*
-             * MODE INPUT BARU
-             */
 
             const x =
                 overtimeCategory[
@@ -355,19 +365,44 @@ if (category) {
             }
 
 
+            /*
+             * KUNCI:
+             *
+             * Jika EDIT, jangan otomatis mengubah
+             * Jam / Konversi yang sudah dimasukkan
+             * manual oleh user.
+             */
+
+            if (isEditMode) {
+
+                /*
+                 * Kategori boleh diganti.
+                 *
+                 * Tetapi Jam dan Konversi tetap
+                 * mengikuti nilai manual.
+                 */
+
+                return;
+
+            }
+
+
+            /*
+             * INPUT BARU
+             *
+             * Semua otomatis.
+             */
+
             start.value =
                 x.start;
 
-
             end.value =
                 x.end;
-
 
             hours.value =
                 calculateHours(
                     x.hours
                 );
-
 
             conversionHours.value =
                 calculateConversionHours(
@@ -382,15 +417,6 @@ if (category) {
 
 /* =====================================================
    JUMLAH JAM BERUBAH
-=====================================================
-
-   INPUT BARU:
-   Konversi otomatis.
-
-   EDIT:
-   Konversi TIDAK berubah otomatis.
-   User bebas menentukan konversinya.
-
 ===================================================== */
 
 if (hours) {
@@ -400,12 +426,17 @@ if (hours) {
         () => {
 
             /*
-             * MODE EDIT
+             * SAAT EDIT:
              *
-             * Jangan mengubah conversionHours.
+             * Jangan menghitung conversion.
+             *
+             * User bebas menentukan:
+             *
+             * Jumlah Jam = 2.5
+             * Konversi    = 4
              */
 
-            if (editId?.value) {
+            if (isEditMode) {
 
                 return;
 
@@ -413,9 +444,10 @@ if (hours) {
 
 
             /*
-             * MODE INPUT BARU
+             * INPUT BARU:
              *
-             * Hitung otomatis.
+             * Jumlah Jam otomatis
+             * menentukan Konversi.
              */
 
             const inputHours =
@@ -434,6 +466,34 @@ if (hours) {
                 calculateConversionHours(
                     totalHours
                 );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   KONVERSI JAM BERUBAH
+===================================================== */
+
+if (conversionHours) {
+
+    conversionHours.addEventListener(
+        "input",
+        () => {
+
+            /*
+             * Tidak melakukan apa-apa.
+             *
+             * Nilai konversi adalah nilai yang
+             * dimasukkan user.
+             *
+             * Pada input baru nilainya sudah
+             * diisi otomatis oleh sistem.
+             *
+             * Pada edit nilainya bebas diubah.
+             */
 
         }
     );
@@ -560,9 +620,7 @@ onValue(
 function render() {
 
     if (!rows) {
-
         return;
-
     }
 
 
@@ -972,17 +1030,6 @@ if (search) {
 
 /* =====================================================
    SIMPAN MANUAL
-=====================================================
-
-   INI BAGIAN UTAMA PERBAIKAN.
-
-   INPUT BARU:
-   hours + conversion otomatis.
-
-   EDIT:
-   hours + conversion menggunakan
-   nilai manual dari form.
-
 ===================================================== */
 
 if (otForm) {
@@ -995,27 +1042,28 @@ if (otForm) {
 
 
             /*
-             * Apakah sedang edit?
+             * AMBIL NILAI LANGSUNG DARI INPUT
+             *
+             * Tidak langsung menjalankan
+             * calculateHours() saat edit.
              */
 
-            const isEdit =
-                Boolean(
-                    editId?.value
-                );
-
-
-            /* =============================================
-               JUMLAH JAM
-            ============================================== */
-
-            const inputHours =
+            let inputHours =
                 Number(
                     hours?.value
                 );
 
 
+            let inputConversion =
+                Number(
+                    conversionHours?.value
+                );
+
+
             if (
-                !Number.isFinite(inputHours) ||
+                !Number.isFinite(
+                    inputHours
+                ) ||
                 inputHours <= 0
             ) {
 
@@ -1028,94 +1076,63 @@ if (otForm) {
             }
 
 
-            let finalHours;
+            /*
+             * =================================================
+             * INPUT BARU
+             * =================================================
+             *
+             * Saat input baru:
+             * Jam dan konversi dihitung otomatis.
+             */
 
-            let finalConversionHours;
+            if (!isEditMode) {
 
-
-            /* =============================================
-               MODE EDIT
-            ============================================== */
-
-            if (isEdit) {
-
-                /*
-                 * Saat EDIT:
-                 *
-                 * Simpan jumlah jam persis
-                 * seperti yang diketik user.
-                 */
-
-                finalHours =
-                    inputHours;
-
-
-                /*
-                 * Saat EDIT:
-                 *
-                 * Simpan konversi persis
-                 * seperti yang diketik user.
-                 */
-
-                const inputConversion =
-                    Number(
-                        conversionHours?.value
-                    );
-
-
-                if (
-                    !Number.isFinite(
-                        inputConversion
-                    ) ||
-                    inputConversion < 0
-                ) {
-
-                    alert(
-                        "Konversi Jam tidak valid."
-                    );
-
-                    return;
-
-                }
-
-
-                finalConversionHours =
-                    inputConversion;
-
-            }
-
-
-            /* =============================================
-               MODE INPUT BARU
-            ============================================== */
-
-            else {
-
-                /*
-                 * Jumlah jam otomatis
-                 */
-
-                finalHours =
+                inputHours =
                     calculateHours(
                         inputHours
                     );
 
 
-                /*
-                 * Konversi otomatis
-                 */
-
-                finalConversionHours =
+                inputConversion =
                     calculateConversionHours(
-                        finalHours
+                        inputHours
                     );
 
             }
 
 
-            /* =============================================
-               TANGGAL
-            ============================================== */
+            /*
+             * =================================================
+             * EDIT
+             * =================================================
+             *
+             * Saat edit:
+             *
+             * inputHours
+             * dan
+             * inputConversion
+             *
+             * DIPAKAI APA ADANYA.
+             *
+             * Tidak dihitung ulang.
+             */
+
+
+            if (
+                !Number.isFinite(
+                    inputConversion
+                ) ||
+                inputConversion < 0
+            ) {
+
+                alert(
+                    "Konversi jam tidak valid."
+                );
+
+                return;
+
+            }
+
 
             const finalDate =
                 String(
@@ -1134,51 +1151,9 @@ if (otForm) {
             }
 
 
-            /* =============================================
-               USER
-            ============================================== */
-
-            const finalUserSap =
-                String(
-                    userSap?.value || ""
-                ).trim();
-
-
-            if (!finalUserSap) {
-
-                alert(
-                    "User tujuan harus dipilih."
-                );
-
-                return;
-
-            }
-
-
-            /* =============================================
-               KATEGORI
-            ============================================== */
-
-            const finalCategory =
-                String(
-                    category?.value || ""
-                ).trim();
-
-
-            if (!finalCategory) {
-
-                alert(
-                    "Kategori overtime harus dipilih."
-                );
-
-                return;
-
-            }
-
-
-            /* =============================================
-               DATA FIREBASE
-            ============================================== */
+            /*
+             * DATA FINAL
+             */
 
             const data = {
 
@@ -1192,27 +1167,21 @@ if (otForm) {
                     end?.value || "",
 
                 /*
-                 * Nilai jumlah jam final
+                 * NILAI INI SEKARANG BENAR-BENAR
+                 * MENGIKUTI INPUT USER SAAT EDIT.
                  */
 
                 hours:
-                    finalHours,
-
-                /*
-                 * Nilai konversi final
-                 *
-                 * INPUT BARU = otomatis
-                 * EDIT       = manual
-                 */
+                    inputHours,
 
                 conversionHours:
-                    finalConversionHours,
+                    inputConversion,
 
                 userSap:
-                    finalUserSap,
+                    userSap?.value || "",
 
                 category:
-                    finalCategory,
+                    category?.value || "",
 
                 note:
                     note?.value.trim() || "",
@@ -1223,9 +1192,9 @@ if (otForm) {
             };
 
 
-            /* =============================================
-               ID DATA
-            ============================================== */
+            /*
+             * ID
+             */
 
             const id =
 
@@ -1245,9 +1214,9 @@ if (otForm) {
                 ).key;
 
 
-            /* =============================================
-               SIMPAN
-            ============================================== */
+            /*
+             * SIMPAN
+             */
 
             await set(
 
@@ -1261,36 +1230,24 @@ if (otForm) {
             );
 
 
-            /* =============================================
-               PESAN
-            ============================================== */
-
             if (msg) {
 
                 showMsg(
-
                     msg,
 
-                    isEdit
-
-                        ?
-
-                    "Data overtime berhasil diperbarui."
-
-                        :
-
-                    "Data overtime berhasil disimpan.",
+                    isEditMode
+                        ? "Data overtime berhasil diperbarui."
+                        : "Data overtime berhasil disimpan.",
 
                     "ok"
-
                 );
 
             }
 
 
-            /* =============================================
-               RESET
-            ============================================== */
+            /*
+             * KEMBALI KE MODE INPUT BARU
+             */
 
             reset();
 
@@ -1306,25 +1263,25 @@ if (otForm) {
 
 function reset() {
 
+    isEditMode = false;
+
+
     if (otForm) {
-
         otForm.reset();
-
     }
 
 
     if (editId) {
-
         editId.value = "";
-
     }
 
 
     if (conversionHours) {
-
         conversionHours.value = "";
-
     }
+
+
+    updateFormMode();
 
 }
 
@@ -1429,9 +1386,6 @@ function getExcelValue(
 
 /* =====================================================
    FORMAT TANGGAL EXCEL
-
-   TIDAK MENGGUNAKAN new Date()
-   UNTUK PARSING STRING EXCEL.
 ===================================================== */
 
 function formatExcelDate(value) {
@@ -1447,28 +1401,16 @@ function formatExcelDate(value) {
     }
 
 
-    /* =================================================
-       STRING
-    ================================================= */
-
-    if (
-        typeof value === "string"
-    ) {
+    if (typeof value === "string") {
 
         const stringValue =
             value.trim();
 
 
         if (!stringValue) {
-
             return "";
-
         }
 
-
-        /* ---------------------------------------------
-           YYYY-MM-DD
-        --------------------------------------------- */
 
         let match =
             stringValue.match(
@@ -1478,42 +1420,14 @@ function formatExcelDate(value) {
 
         if (match) {
 
-            const year =
-                Number(match[1]);
-
-            const month =
-                Number(match[2]);
-
-            const day =
-                Number(match[3]);
-
-
-            if (
-                month >= 1 &&
-                month <= 12 &&
-                day >= 1 &&
-                day <= 31
-            ) {
-
-                return buildDateString(
-                    year,
-                    month,
-                    day
-                );
-
-            }
+            return buildDateString(
+                Number(match[1]),
+                Number(match[2]),
+                Number(match[3])
+            );
 
         }
 
-
-        /* ---------------------------------------------
-           MM/DD/YY
-
-           Contoh:
-           08/11/26
-           menjadi:
-           2026-08-11
-        --------------------------------------------- */
 
         match =
             stringValue.match(
@@ -1532,40 +1446,20 @@ function formatExcelDate(value) {
             const shortYear =
                 Number(match[3]);
 
-
             const year =
                 shortYear >= 50
-
-                    ?
-
-                1900 + shortYear
-
-                    :
-
-                2000 + shortYear;
+                    ? 1900 + shortYear
+                    : 2000 + shortYear;
 
 
-            if (
-                month >= 1 &&
-                month <= 12 &&
-                day >= 1 &&
-                day <= 31
-            ) {
-
-                return buildDateString(
-                    year,
-                    month,
-                    day
-                );
-
-            }
+            return buildDateString(
+                year,
+                month,
+                day
+            );
 
         }
 
-
-        /* ---------------------------------------------
-           MM/DD/YYYY
-        --------------------------------------------- */
 
         match =
             stringValue.match(
@@ -1575,37 +1469,14 @@ function formatExcelDate(value) {
 
         if (match) {
 
-            const month =
-                Number(match[1]);
-
-            const day =
-                Number(match[2]);
-
-            const year =
-                Number(match[3]);
-
-
-            if (
-                month >= 1 &&
-                month <= 12 &&
-                day >= 1 &&
-                day <= 31
-            ) {
-
-                return buildDateString(
-                    year,
-                    month,
-                    day
-                );
-
-            }
+            return buildDateString(
+                Number(match[3]),
+                Number(match[1]),
+                Number(match[2])
+            );
 
         }
 
-
-        /* ---------------------------------------------
-           DD-MM-YYYY
-        --------------------------------------------- */
 
         match =
             stringValue.match(
@@ -1615,30 +1486,11 @@ function formatExcelDate(value) {
 
         if (match) {
 
-            const day =
-                Number(match[1]);
-
-            const month =
-                Number(match[2]);
-
-            const year =
-                Number(match[3]);
-
-
-            if (
-                month >= 1 &&
-                month <= 12 &&
-                day >= 1 &&
-                day <= 31
-            ) {
-
-                return buildDateString(
-                    year,
-                    month,
-                    day
-                );
-
-            }
+            return buildDateString(
+                Number(match[3]),
+                Number(match[2]),
+                Number(match[1])
+            );
 
         }
 
@@ -1647,10 +1499,6 @@ function formatExcelDate(value) {
 
     }
 
-
-    /* =================================================
-       EXCEL SERIAL DATE
-    ================================================= */
 
     if (
         typeof value === "number" &&
@@ -1672,31 +1520,11 @@ function formatExcelDate(value) {
 
             if (parsed) {
 
-                const year =
-                    Number(parsed.y);
-
-                const month =
-                    Number(parsed.m);
-
-                const day =
-                    Number(parsed.d);
-
-
-                if (
-                    year > 0 &&
-                    month >= 1 &&
-                    month <= 12 &&
-                    day >= 1 &&
-                    day <= 31
-                ) {
-
-                    return buildDateString(
-                        year,
-                        month,
-                        day
-                    );
-
-                }
+                return buildDateString(
+                    Number(parsed.y),
+                    Number(parsed.m),
+                    Number(parsed.d)
+                );
 
             }
 
@@ -1704,10 +1532,6 @@ function formatExcelDate(value) {
 
     }
 
-
-    /* =================================================
-       JAVASCRIPT DATE
-    ================================================= */
 
     if (
         value instanceof Date &&
@@ -1729,7 +1553,7 @@ function formatExcelDate(value) {
 
 
 /* =====================================================
-   BUILD DATE STRING
+   BUILD DATE
 ===================================================== */
 
 function buildDateString(
@@ -1783,7 +1607,7 @@ function formatExcelTime(value) {
             value.trim();
 
 
-        let match =
+        const match =
             stringValue.match(
                 /^(\d{1,2}):(\d{1,2})/
             );
@@ -1925,14 +1749,8 @@ function parseExcelNumber(value) {
     ) {
 
         return Number.isFinite(value)
-
-            ?
-
-        value
-
-            :
-
-        0;
+            ? value
+            : 0;
 
     }
 
@@ -1966,16 +1784,9 @@ function parseExcelNumber(value) {
 
     if (match) {
 
-        const hour =
-            Number(match[1]);
-
-        const minute =
-            Number(match[2]);
-
-
         return (
-            hour +
-            minute / 60
+            Number(match[1]) +
+            Number(match[2]) / 60
         );
 
     }
@@ -1996,9 +1807,7 @@ function showExcelMsg(
 ) {
 
     if (!excelMsg) {
-
         return;
-
     }
 
 
@@ -2139,10 +1948,6 @@ async function uploadExcel() {
         const errors = [];
 
 
-        /* =================================================
-           PROSES SETIAP BARIS
-        ================================================= */
-
         for (
             let i = 0;
             i < dataExcel.length;
@@ -2155,10 +1960,6 @@ async function uploadExcel() {
 
             try {
 
-                /* =========================================
-                   TANGGAL
-                ========================================== */
-
                 const rowDate =
                     getExcelValue(
                         row,
@@ -2169,10 +1970,6 @@ async function uploadExcel() {
                         ]
                     );
 
-
-                /* =========================================
-                   SAP
-                ========================================== */
 
                 const rowSap =
                     getExcelValue(
@@ -2187,10 +1984,6 @@ async function uploadExcel() {
                     );
 
 
-                /* =========================================
-                   KATEGORI
-                ========================================== */
-
                 const rowCategory =
                     getExcelValue(
                         row,
@@ -2201,10 +1994,6 @@ async function uploadExcel() {
                         ]
                     );
 
-
-                /* =========================================
-                   MULAI
-                ========================================== */
 
                 let rowStart =
                     getExcelValue(
@@ -2217,10 +2006,6 @@ async function uploadExcel() {
                     );
 
 
-                /* =========================================
-                   SELESAI
-                ========================================== */
-
                 let rowEnd =
                     getExcelValue(
                         row,
@@ -2232,10 +2017,6 @@ async function uploadExcel() {
                     );
 
 
-                /* =========================================
-                   JAM
-                ========================================== */
-
                 const rowHours =
                     getExcelValue(
                         row,
@@ -2246,10 +2027,6 @@ async function uploadExcel() {
                         ]
                     );
 
-
-                /* =========================================
-                   KONVERSI
-                ========================================== */
 
                 const rowConversion =
                     getExcelValue(
@@ -2263,10 +2040,6 @@ async function uploadExcel() {
                     );
 
 
-                /* =========================================
-                   CATATAN
-                ========================================== */
-
                 const rowNote =
                     getExcelValue(
                         row,
@@ -2277,10 +2050,6 @@ async function uploadExcel() {
                         ]
                     );
 
-
-                /* =========================================
-                   VALIDASI SAP
-                ========================================== */
 
                 const sap =
                     String(
@@ -2305,10 +2074,6 @@ async function uploadExcel() {
 
                 }
 
-
-                /* =========================================
-                   TANGGAL
-                ========================================== */
 
                 const finalDate =
                     formatExcelDate(
@@ -2336,10 +2101,6 @@ async function uploadExcel() {
 
                 }
 
-
-                /* =========================================
-                   KATEGORI
-                ========================================== */
 
                 const finalCategory =
                     String(
@@ -2373,10 +2134,6 @@ async function uploadExcel() {
                 }
 
 
-                /* =========================================
-                   JAM MULAI
-                ========================================== */
-
                 rowStart =
                     formatExcelTime(
                         rowStart
@@ -2391,10 +2148,6 @@ async function uploadExcel() {
                 }
 
 
-                /* =========================================
-                   JAM SELESAI
-                ========================================== */
-
                 rowEnd =
                     formatExcelTime(
                         rowEnd
@@ -2408,10 +2161,6 @@ async function uploadExcel() {
 
                 }
 
-
-                /* =========================================
-                   JAM OVERTIME
-                ========================================== */
 
                 let rawHours =
                     parseExcelNumber(
@@ -2447,10 +2196,6 @@ async function uploadExcel() {
                         rawHours
                     );
 
-
-                /* =========================================
-                   KONVERSI
-                ========================================== */
 
                 let finalConversion;
 
@@ -2493,19 +2238,11 @@ async function uploadExcel() {
                 }
 
 
-                /* =========================================
-                   CATATAN
-                ========================================== */
-
                 const finalNote =
                     String(
                         rowNote || ""
                     ).trim();
 
-
-                /* =========================================
-                   DATA FIREBASE
-                ========================================== */
 
                 const firebaseData = {
 
@@ -2542,10 +2279,6 @@ async function uploadExcel() {
                 };
 
 
-                /* =========================================
-                   SIMPAN FIREBASE
-                ========================================== */
-
                 const newRef =
                     push(
                         ref(
@@ -2577,10 +2310,6 @@ async function uploadExcel() {
         }
 
 
-        /* =================================================
-           HASIL
-        ================================================= */
-
         let resultMessage =
             `Upload selesai.\n` +
             `Berhasil: ${berhasil} data.\n` +
@@ -2605,9 +2334,7 @@ async function uploadExcel() {
 
 
         if (excelFile) {
-
             excelFile.value = "";
-
         }
 
 
@@ -2685,17 +2412,11 @@ function downloadExcelTemplate() {
         worksheet["!cols"] = [
 
             { wch: 15 },
-
             { wch: 15 },
-
             { wch: 15 },
-
             { wch: 12 },
-
             { wch: 12 },
-
             { wch: 10 },
-
             { wch: 30 }
 
         ];
@@ -2780,7 +2501,6 @@ function downloadExcelTemplate() {
         instructionSheet["!cols"] = [
 
             { wch: 20 },
-
             { wch: 70 }
 
         ];
@@ -2848,9 +2568,7 @@ if (deleteSelectedBtn) {
 
 
             if (!confirmed) {
-
                 return;
-
             }
 
 
@@ -3020,109 +2738,83 @@ if (rows) {
 
 
                 /*
-                 * Set EDIT MODE terlebih dahulu.
-                 *
-                 * Ini penting supaya event
-                 * perubahan kategori/jumlah jam
-                 * tidak menjalankan auto calculation.
+                 * AKTIFKAN MODE EDIT
                  */
 
+                isEditMode = true;
+
+
+                updateFormMode();
+
+
                 if (editId) {
-
-                    editId.value =
-                        ed;
-
+                    editId.value = ed;
                 }
 
-
-                /* =========================================
-                   TANGGAL
-                ========================================== */
 
                 if (date) {
-
                     date.value =
                         x?.date || "";
-
                 }
 
-
-                /* =========================================
-                   USER SAP
-                ========================================== */
 
                 if (userSap) {
-
                     userSap.value =
                         x?.userSap || "";
-
                 }
 
-
-                /* =========================================
-                   KATEGORI
-                ========================================== */
 
                 if (category) {
-
                     category.value =
                         x?.category || "";
-
                 }
 
-
-                /* =========================================
-                   JAM MULAI
-                ========================================== */
 
                 if (start) {
-
                     start.value =
                         x?.start || "";
-
                 }
 
-
-                /* =========================================
-                   JAM SELESAI
-                ========================================== */
 
                 if (end) {
-
                     end.value =
                         x?.end || "";
-
                 }
 
 
-                /* =========================================
-                   JUMLAH JAM
-
-                   NILAI ASLI DATABASE
-                   TIDAK DI-CALCULATE ULANG
-                ========================================== */
+                /*
+                 * PENTING:
+                 *
+                 * Ambil nilai database APA ADANYA.
+                 *
+                 * Jangan calculateHours().
+                 */
 
                 if (hours) {
 
                     hours.value =
-                        x?.hours ?? "";
+                        x?.hours !== undefined &&
+                        x?.hours !== null
+                            ? x.hours
+                            : "";
 
                 }
 
 
-                /* =========================================
-                   KONVERSI JAM
-
-                   NILAI ASLI DATABASE
-                   TIDAK DI-CALCULATE ULANG
-                ========================================== */
+                /*
+                 * PENTING:
+                 *
+                 * Ambil conversion database APA ADANYA.
+                 *
+                 * Jangan dihitung ulang.
+                 */
 
                 if (conversionHours) {
 
                     conversionHours.value =
+
                         x?.conversionHours !== undefined &&
-                        x?.conversionHours !== null &&
-                        x?.conversionHours !== ""
+                        x?.conversionHours !== null
 
                             ?
 
@@ -3130,28 +2822,16 @@ if (rows) {
 
                             :
 
-                        calculateConversionHours(
-                            x?.hours || 0
-                        );
+                        "";
 
                 }
 
-
-                /* =========================================
-                   KETERANGAN
-                ========================================== */
 
                 if (note) {
-
                     note.value =
                         x?.note || "";
-
                 }
 
-
-                /* =========================================
-                   SCROLL KE FORM
-                ========================================== */
 
                 window.scrollTo({
 
