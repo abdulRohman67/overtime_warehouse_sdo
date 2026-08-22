@@ -266,7 +266,8 @@ function calculateConversionHours(value) {
 
         7: 14,
 
-        8: 16
+        8: 16,
+        8: 17
 
     };
 
