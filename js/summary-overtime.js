@@ -159,7 +159,7 @@ function calculateConversionHours(value) {
 
         7: 14,
 
-        8: 16,
+        8: 17,
 
         3.5: 6.5,
 
