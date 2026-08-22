@@ -248,9 +248,8 @@ function calculateConversionHours(value) {
 
     const conversion = {
 
+      
         1: 1.5,
-
-        1.5: 2.5,
 
         2: 3.5,
 
@@ -266,7 +265,11 @@ function calculateConversionHours(value) {
 
         7: 14,
 
-        8: 17
+        8: 17,
+
+        3.5: 6.5,
+
+        1.5 : 2.5
 
     };
 
