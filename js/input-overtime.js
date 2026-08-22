@@ -21,27 +21,22 @@ import {
 } from "./session.js";
 
 
-
 /* =====================================================
    SESSION
 ===================================================== */
 
 const s = requireLogin();
 
-
 if (
     !s ||
     String(s.role || "").toLowerCase() !== "admin"
 ) {
-
     location.href = "dashboard.html";
 
     throw new Error(
         "Akses hanya untuk administrator."
     );
-
 }
-
 
 
 /* =====================================================
@@ -49,9 +44,7 @@ if (
 ===================================================== */
 
 let all = [];
-
 let users = {};
-
 
 
 /* =====================================================
@@ -101,7 +94,6 @@ const msg =
     document.getElementById("msg");
 
 
-
 /* =====================================================
    ELEMENT EXCEL
 ===================================================== */
@@ -117,7 +109,6 @@ const downloadTemplateBtn =
 
 const excelMsg =
     document.getElementById("excelMsg");
-
 
 
 /* =====================================================
@@ -138,7 +129,6 @@ const selectedCount =
     );
 
 
-
 /* =====================================================
    KATEGORI OVERTIME
 ===================================================== */
@@ -146,61 +136,36 @@ const selectedCount =
 const overtimeCategory = {
 
     IOR1: {
-
         start: "13:00",
-
         end: "15:00",
-
         hours: 2
-
     },
-
 
     IOR2: {
-
         start: "21:00",
-
         end: "23:00",
-
         hours: 2
-
     },
-
 
     IOR3: {
-
         start: "05:00",
-
         end: "07:00",
-
         hours: 2
-
     },
-
 
     IPN1: {
-
         start: "19:00",
-
         end: "23:00",
-
         hours: 4
-
     },
 
-
     IPM1: {
-
         start: "15:00",
-
         end: "19:00",
-
         hours: 4
-
     }
 
 };
-
 
 
 /* =====================================================
@@ -215,25 +180,16 @@ function calculateHours(value) {
     const total =
         Number(value) || 0;
 
-
     if (total === 4) {
-
         return 3.5;
-
     }
-
 
     if (total === 11) {
-
         return 10.5;
-
     }
 
-
     return total;
-
 }
-
 
 
 /* =====================================================
@@ -245,43 +201,25 @@ function calculateConversionHours(value) {
     const total =
         Number(value) || 0;
 
-
     const conversion = {
 
-      
         1: 1.5,
-
+        1.5: 2.5,
         2: 3.5,
-
         3: 5.5,
-
         3.5: 6.5,
-
         4: 7.5,
-
         5: 9.5,
-
         6: 11.5,
-
         7: 14,
-
-        8: 17,
-
-        3.5: 6.5,
-
-        1.5 : 2.5
+        8: 17
 
     };
 
-
     return conversion[total] !== undefined
-
         ? conversion[total]
-
         : total;
-
 }
-
 
 
 /* =====================================================
@@ -291,15 +229,10 @@ function calculateConversionHours(value) {
 function getConversionHours(x) {
 
     if (
-
         x &&
-
         x.conversionHours !== undefined &&
-
         x.conversionHours !== null &&
-
         x.conversionHours !== ""
-
     ) {
 
         const value =
@@ -307,24 +240,17 @@ function getConversionHours(x) {
                 x.conversionHours
             );
 
-
         if (
             Number.isFinite(value)
         ) {
-
             return value;
-
         }
-
     }
-
 
     return calculateConversionHours(
         x?.hours || 0
     );
-
 }
-
 
 
 /* =====================================================
@@ -336,13 +262,10 @@ function formatNumber(value) {
     const number =
         Number(value) || 0;
 
-
     return Number(
         number.toFixed(2)
     ).toString();
-
 }
-
 
 
 /* =====================================================
@@ -353,51 +276,38 @@ if (category) {
 
     category.onchange = () => {
 
-
         const x =
             overtimeCategory[
                 category.value
             ];
 
-
         if (!x) {
 
             start.value = "";
-
             end.value = "";
-
             hours.value = "";
-
             conversionHours.value = "";
 
             return;
-
         }
-
 
         start.value =
             x.start;
 
-
         end.value =
             x.end;
-
 
         hours.value =
             calculateHours(
                 x.hours
             );
 
-
         conversionHours.value =
             calculateConversionHours(
                 hours.value
             );
-
     };
-
 }
-
 
 
 /* =====================================================
@@ -408,28 +318,22 @@ if (hours) {
 
     hours.oninput = () => {
 
-
         const inputHours =
             Number(
                 hours.value
             ) || 0;
-
 
         const totalHours =
             calculateHours(
                 inputHours
             );
 
-
         conversionHours.value =
             calculateConversionHours(
                 totalHours
             );
-
     };
-
 }
-
 
 
 /* =====================================================
@@ -445,53 +349,36 @@ onValue(
 
     snap => {
 
-
         users =
-
             snap.exists()
-
-                ?
-
-                snap.val()
-
-                :
-
-                {};
-
+                ? snap.val()
+                : {};
 
         if (userSap) {
 
             userSap.innerHTML =
                 '<option value="">Pilih user</option>';
 
-
             Object.entries(users)
 
                 .filter(
-
                     ([k, u]) =>
-
                         String(
                             u?.role || ""
                         )
                             .toLowerCase() ===
                         "user"
-
                 )
 
                 .sort(
-
                     ([a], [b]) =>
-
                         String(a)
                             .localeCompare(
                                 String(b)
                             )
-
                 )
 
                 .forEach(
-
                     ([k, u]) => {
 
                         userSap.insertAdjacentHTML(
@@ -503,18 +390,12 @@ onValue(
                         );
 
                     }
-
                 );
-
         }
 
-
         render();
-
     }
-
 );
-
 
 
 /* =====================================================
@@ -530,9 +411,7 @@ onValue(
 
     snap => {
 
-
         all =
-
             snap.exists()
 
                 ?
@@ -540,30 +419,20 @@ onValue(
                 Object.entries(
                     snap.val()
                 )
-
                     .map(
-
                         ([id, x]) => ({
-
                             id,
-
                             ...(x || {})
-
                         })
-
                     )
 
                 :
 
                 [];
 
-
         render();
-
     }
-
 );
-
 
 
 /* =====================================================
@@ -573,73 +442,52 @@ onValue(
 function render() {
 
     if (!rows) {
-
         return;
-
     }
 
-
     const q =
-
         String(
             search?.value || ""
         )
             .toLowerCase()
             .trim();
 
-
     const d =
 
         all
 
             .filter(
-
                 x => {
 
                     const text =
 
                         `${x?.userSap || ""} ` +
-
                         `${users[
                             x?.userSap
                         ]?.name || ""} ` +
-
                         `${x?.date || ""} ` +
-
                         `${x?.category || ""} ` +
-
                         `${x?.note || ""}`;
 
-
                     return (
-
                         !q ||
-
                         text
                             .toLowerCase()
                             .includes(q)
-
                     );
-
                 }
-
             )
 
             .sort(
-
                 (a, b) =>
-
                     String(
                         b?.date || ""
                     )
                         .localeCompare(
-
                             String(
                                 a?.date || ""
                             )
-
                         )
-
             );
 
 
@@ -653,22 +501,17 @@ function render() {
                     colspan="10"
                     class="empty"
                 >
-
                     Belum ada data.
-
                 </td>
 
             </tr>
 
         `;
 
-
         resetCheckboxState();
 
         return;
-
     }
-
 
 
     rows.innerHTML =
@@ -676,12 +519,10 @@ function render() {
         d
 
             .map(
-
                 x => {
 
                     const conversion =
                         getConversionHours(x);
-
 
                     return `
 
@@ -701,20 +542,17 @@ function render() {
 
                             </td>
 
-
                             <td>
                                 ${esc(
                                     x?.date || ""
                                 )}
                             </td>
 
-
                             <td>
                                 ${esc(
                                     x?.userSap || ""
                                 )}
                             </td>
-
 
                             <td>
                                 ${esc(
@@ -724,13 +562,11 @@ function render() {
                                 )}
                             </td>
 
-
                             <td>
                                 ${esc(
                                     x?.start || ""
                                 )}
                             </td>
-
 
                             <td>
                                 ${esc(
@@ -738,13 +574,11 @@ function render() {
                                 )}
                             </td>
 
-
                             <td>
                                 ${formatNumber(
                                     x?.hours || 0
                                 )}
                             </td>
-
 
                             <td>
                                 ${formatNumber(
@@ -752,13 +586,11 @@ function render() {
                                 )}
                             </td>
 
-
                             <td>
                                 ${esc(
                                     x?.note || ""
                                 )}
                             </td>
-
 
                             <td class="actions">
 
@@ -770,7 +602,6 @@ function render() {
                                 >
                                     Edit
                                 </button>
-
 
                                 <button
                                     type="button"
@@ -787,9 +618,7 @@ function render() {
                         </tr>
 
                     `;
-
                 }
-
             )
 
             .join("");
@@ -798,9 +627,7 @@ function render() {
     restoreSelectedCheckboxes();
 
     updateSelectedCount();
-
 }
-
 
 
 /* =====================================================
@@ -810,20 +637,14 @@ function render() {
 function getSelectedIds() {
 
     return Array.from(
-
         document.querySelectorAll(
             ".rowCheck:checked"
         )
-
     ).map(
-
         checkbox =>
             checkbox.dataset.id
-
     );
-
 }
-
 
 
 /* =====================================================
@@ -835,26 +656,20 @@ function restoreSelectedCheckboxes() {
     const selectedIds =
         window.selectedOvertimeIds || [];
 
-
     document
         .querySelectorAll(
             ".rowCheck"
         )
         .forEach(
-
             checkbox => {
 
                 checkbox.checked =
                     selectedIds.includes(
                         checkbox.dataset.id
                     );
-
             }
-
         );
-
 }
-
 
 
 /* =====================================================
@@ -868,52 +683,37 @@ function updateSelectedCount() {
             ".rowCheck:checked"
         );
 
-
     const ids =
-
         Array.from(
             checked
         ).map(
-
             checkbox =>
                 checkbox.dataset.id
-
         );
-
 
     window.selectedOvertimeIds =
         ids;
 
-
     if (selectedCount) {
 
         selectedCount.textContent =
-
             `${ids.length} data dipilih`;
-
     }
 
-
     const allCheckboxes =
-
         document.querySelectorAll(
             ".rowCheck"
         );
-
 
     if (selectAll) {
 
         selectAll.checked =
 
             allCheckboxes.length > 0 &&
-
             checked.length ===
             allCheckboxes.length;
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -924,24 +724,15 @@ function resetCheckboxState() {
 
     window.selectedOvertimeIds = [];
 
-
     if (selectAll) {
-
-        selectAll.checked =
-            false;
-
+        selectAll.checked = false;
     }
-
 
     if (selectedCount) {
-
         selectedCount.textContent =
             "0 data dipilih";
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -951,40 +742,27 @@ function resetCheckboxState() {
 if (selectAll) {
 
     selectAll.addEventListener(
-
         "change",
-
         () => {
-
 
             const checked =
                 selectAll.checked;
-
 
             document
                 .querySelectorAll(
                     ".rowCheck"
                 )
                 .forEach(
-
                     checkbox => {
-
                         checkbox.checked =
                             checked;
-
                     }
-
                 );
 
-
             updateSelectedCount();
-
         }
-
     );
-
 }
-
 
 
 /* =====================================================
@@ -994,30 +772,19 @@ if (selectAll) {
 if (rows) {
 
     rows.addEventListener(
-
         "change",
-
         e => {
 
-
             if (
-
                 e.target.classList.contains(
                     "rowCheck"
                 )
-
             ) {
-
                 updateSelectedCount();
-
             }
-
         }
-
     );
-
 }
-
 
 
 /* =====================================================
@@ -1025,12 +792,9 @@ if (rows) {
 ===================================================== */
 
 if (search) {
-
     search.oninput =
         render;
-
 }
-
 
 
 /* =====================================================
@@ -1042,16 +806,12 @@ if (otForm) {
     otForm.onsubmit =
         async e => {
 
-
             e.preventDefault();
 
-
             const inputHours =
-
                 Number(
                     hours?.value
                 ) || 0;
-
 
             if (
                 inputHours <= 0
@@ -1062,23 +822,17 @@ if (otForm) {
                 );
 
                 return;
-
             }
 
-
             const totalHours =
-
                 calculateHours(
                     inputHours
                 );
 
-
             const totalConversionHours =
-
                 calculateConversionHours(
                     totalHours
                 );
-
 
             const data = {
 
@@ -1108,27 +862,20 @@ if (otForm) {
 
                 updatedAt:
                     Date.now()
-
             };
-
 
             const id =
 
                 editId?.value
-
                     ?
-
-                editId.value
-
+                    editId.value
                     :
-
-                push(
-                    ref(
-                        db,
-                        "overtime"
-                    )
-                ).key;
-
+                    push(
+                        ref(
+                            db,
+                            "overtime"
+                        )
+                    ).key;
 
             await set(
 
@@ -1138,9 +885,7 @@ if (otForm) {
                 ),
 
                 data
-
             );
-
 
             if (msg) {
 
@@ -1151,18 +896,12 @@ if (otForm) {
                     "Data overtime berhasil disimpan.",
 
                     "ok"
-
                 );
-
             }
 
-
             reset();
-
         };
-
 }
-
 
 
 /* =====================================================
@@ -1172,27 +911,17 @@ if (otForm) {
 function reset() {
 
     if (otForm) {
-
         otForm.reset();
-
     }
-
 
     if (editId) {
-
         editId.value = "";
-
     }
-
 
     if (conversionHours) {
-
         conversionHours.value = "";
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -1200,12 +929,9 @@ function reset() {
 ===================================================== */
 
 if (resetBtn) {
-
     resetBtn.onclick =
         reset;
-
 }
-
 
 
 /* =====================================================
@@ -1213,20 +939,14 @@ if (resetBtn) {
 ===================================================== */
 
 if (uploadExcelBtn) {
-
     uploadExcelBtn.onclick =
         uploadExcel;
-
 }
-
 
 if (downloadTemplateBtn) {
-
     downloadTemplateBtn.onclick =
         downloadExcelTemplate;
-
 }
-
 
 
 /* =====================================================
@@ -1236,17 +956,11 @@ if (downloadTemplateBtn) {
 function normalizeHeader(value) {
 
     return String(value || "")
-
         .trim()
-
         .toLowerCase()
-
         .replace(/\s+/g, "")
-
         .replace(/[_-]/g, "");
-
 }
-
 
 
 /* =====================================================
@@ -1263,7 +977,6 @@ function getExcelValue(
             row || {}
         );
 
-
     for (
         const name of names
     ) {
@@ -1271,80 +984,68 @@ function getExcelValue(
         const target =
             normalizeHeader(name);
 
-
         const found =
             keys.find(
-
                 key =>
-
                     normalizeHeader(key) ===
                     target
-
             );
-
 
         if (
             found !== undefined
         ) {
-
             return row[found];
-
         }
-
     }
 
-
     return "";
-
 }
-
 
 
 /* =====================================================
    FORMAT TANGGAL EXCEL
+   VERSI AMAN - TIDAK BERGESER KARENA TIMEZONE
 ===================================================== */
 
 function formatExcelDate(value) {
 
     if (
-
         value === null ||
-
         value === undefined ||
-
         value === ""
-
     ) {
-
         return "";
-
     }
 
+
+    /* =========================================
+       STRING
+    ========================================== */
 
     const stringValue =
         String(value).trim();
 
 
+    /*
+     * Sudah YYYY-MM-DD
+     */
     if (
-
         /^\d{4}-\d{2}-\d{2}$/
             .test(stringValue)
-
     ) {
 
         return stringValue;
-
     }
 
 
+    /*
+     * DD/MM/YYYY
+     * DD-MM-YYYY
+     */
     let match =
-
         stringValue.match(
-
             /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/
-
         );
-
 
     if (match) {
 
@@ -1363,64 +1064,37 @@ function formatExcelDate(value) {
         const year =
             match[3];
 
-
         return (
             `${year}-${month}-${day}`
         );
-
     }
 
 
-    if (
-        typeof value === "number" &&
-        window.XLSX
-    ) {
-
-        const parsed =
-            XLSX.SSF.parse_date_code(
-                value
-            );
-
-
-        if (parsed) {
-
-            const year =
-                String(parsed.y);
-
-            const month =
-                String(parsed.m)
-                    .padStart(
-                        2,
-                        "0"
-                    );
-
-            const day =
-                String(parsed.d)
-                    .padStart(
-                        2,
-                        "0"
-                    );
-
-
-            return (
-                `${year}-${month}-${day}`
-            );
-
-        }
-
-    }
-
+    /* =========================================
+       DATE OBJECT
+       
+       PENTING:
+       Gunakan UTC agar tidak terkena timezone.
+    ========================================== */
 
     if (
         value instanceof Date
     ) {
 
+        if (
+            isNaN(
+                value.getTime()
+            )
+        ) {
+            return "";
+        }
+
         const year =
-            value.getFullYear();
+            value.getUTCFullYear();
 
         const month =
             String(
-                value.getMonth() + 1
+                value.getUTCMonth() + 1
             ).padStart(
                 2,
                 "0"
@@ -1428,61 +1102,118 @@ function formatExcelDate(value) {
 
         const day =
             String(
-                value.getDate()
+                value.getUTCDate()
             ).padStart(
                 2,
                 "0"
             );
 
-
         return (
             `${year}-${month}-${day}`
         );
-
     }
 
 
-    const dateObject =
-        new Date(value);
-
+    /* =========================================
+       EXCEL SERIAL NUMBER
+       
+       Contoh:
+       45889
+       45890
+       dst.
+    ========================================== */
 
     if (
-        !isNaN(
-            dateObject.getTime()
-        )
+        typeof value === "number" &&
+        Number.isFinite(value)
     ) {
 
+        const excelSerial =
+            Math.floor(value);
+
+        if (
+            window.XLSX &&
+            XLSX.SSF &&
+            typeof XLSX.SSF.parse_date_code ===
+            "function"
+        ) {
+
+            const parsed =
+                XLSX.SSF.parse_date_code(
+                    excelSerial
+                );
+
+            if (parsed) {
+
+                const year =
+                    String(parsed.y);
+
+                const month =
+                    String(parsed.m)
+                        .padStart(
+                            2,
+                            "0"
+                        );
+
+                const day =
+                    String(parsed.d)
+                        .padStart(
+                            2,
+                            "0"
+                        );
+
+                return (
+                    `${year}-${month}-${day}`
+                );
+            }
+        }
+    }
+
+
+    /* =========================================
+       STRING YYYY/MM/DD
+    ========================================== */
+
+    match =
+        stringValue.match(
+            /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/
+        );
+
+    if (match) {
+
         const year =
-            dateObject.getFullYear();
+            match[1];
 
         const month =
-            String(
-                dateObject.getMonth() + 1
-            ).padStart(
+            match[2].padStart(
                 2,
                 "0"
             );
 
         const day =
-            String(
-                dateObject.getDate()
-            ).padStart(
+            match[3].padStart(
                 2,
                 "0"
             );
 
-
         return (
             `${year}-${month}-${day}`
         );
-
     }
+
+
+    /*
+     * JANGAN menggunakan:
+     *
+     * new Date(value)
+     *
+     * karena bisa menyebabkan tanggal
+     * bergeser akibat timezone.
+     */
 
 
     return stringValue;
-
 }
-
 
 
 /* =====================================================
@@ -1492,19 +1223,17 @@ function formatExcelDate(value) {
 function formatExcelTime(value) {
 
     if (
-
         value === null ||
-
         value === undefined ||
-
         value === ""
-
     ) {
-
         return "";
-
     }
 
+
+    /* =========================================
+       DATE OBJECT
+    ========================================== */
 
     if (
         value instanceof Date
@@ -1512,7 +1241,7 @@ function formatExcelTime(value) {
 
         const hour =
             String(
-                value.getHours()
+                value.getUTCHours()
             ).padStart(
                 2,
                 "0"
@@ -1520,21 +1249,23 @@ function formatExcelTime(value) {
 
         const minute =
             String(
-                value.getMinutes()
+                value.getUTCMinutes()
             ).padStart(
                 2,
                 "0"
             );
 
-
         return `${hour}:${minute}`;
-
     }
 
 
     const stringValue =
         String(value).trim();
 
+
+    /* =========================================
+       HH:MM
+    ========================================== */
 
     if (
         /^\d{1,2}:\d{2}$/
@@ -1543,7 +1274,6 @@ function formatExcelTime(value) {
 
         const parts =
             stringValue.split(":");
-
 
         return (
 
@@ -1566,11 +1296,13 @@ function formatExcelTime(value) {
                 2,
                 "0"
             )
-
         );
-
     }
 
+
+    /* =========================================
+       EXCEL TIME SERIAL
+    ========================================== */
 
     if (
         typeof value === "number"
@@ -1584,7 +1316,6 @@ function formatExcelTime(value) {
                 60
             );
 
-
         totalMinutes =
 
             totalMinutes %
@@ -1592,18 +1323,13 @@ function formatExcelTime(value) {
                 24 * 60
             );
 
-
         const hour =
-
             Math.floor(
                 totalMinutes / 60
             );
 
-
         const minute =
-
             totalMinutes % 60;
-
 
         return (
 
@@ -1624,16 +1350,12 @@ function formatExcelTime(value) {
                     2,
                     "0"
                 )
-
         );
-
     }
 
 
     return stringValue;
-
 }
-
 
 
 /* =====================================================
@@ -1643,39 +1365,26 @@ function formatExcelTime(value) {
 function parseExcelNumber(value) {
 
     if (
-
         value === null ||
-
         value === undefined ||
-
         value === ""
-
     ) {
-
         return 0;
-
     }
 
 
     if (
         typeof value === "number"
     ) {
-
         return value;
-
     }
 
 
     const stringValue =
 
         String(value)
-
             .trim()
-
-            .replace(
-                ",",
-                "."
-            );
+            .replace(",", ".");
 
 
     const number =
@@ -1683,24 +1392,17 @@ function parseExcelNumber(value) {
             stringValue
         );
 
-
     if (
         Number.isFinite(number)
     ) {
-
         return number;
-
     }
 
 
     const match =
-
         stringValue.match(
-
             /^(\d+(?:\.\d+)?)\s*:\s*(\d+)$/
-
         );
-
 
     if (match) {
 
@@ -1714,19 +1416,15 @@ function parseExcelNumber(value) {
                 match[2]
             );
 
-
         return (
             hour +
             minute / 60
         );
-
     }
 
 
     return 0;
-
 }
-
 
 
 /* =====================================================
@@ -1739,19 +1437,14 @@ function showExcelMsg(
 ) {
 
     if (!excelMsg) {
-
         return;
-
     }
-
 
     excelMsg.textContent =
         text;
 
-
     excelMsg.style.whiteSpace =
         "pre-line";
-
 
     if (
         type === "error"
@@ -1764,11 +1457,8 @@ function showExcelMsg(
 
         excelMsg.style.color =
             "";
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -1779,15 +1469,10 @@ async function uploadExcel() {
 
     try {
 
-
         if (
-
             !excelFile ||
-
             !excelFile.files ||
-
             !excelFile.files.length
-
         ) {
 
             alert(
@@ -1795,7 +1480,6 @@ async function uploadExcel() {
             );
 
             return;
-
         }
 
 
@@ -1808,11 +1492,8 @@ async function uploadExcel() {
 
 
         if (
-
             !fileName.endsWith(".xlsx") &&
-
             !fileName.endsWith(".xls")
-
         ) {
 
             alert(
@@ -1820,7 +1501,6 @@ async function uploadExcel() {
             );
 
             return;
-
         }
 
 
@@ -1834,19 +1514,27 @@ async function uploadExcel() {
             await file.arrayBuffer();
 
 
+        /* =========================================
+           BACA EXCEL
+           
+           cellDates true:
+           tanggal Excel bisa menjadi Date.
+
+           cellNF true:
+           format cell tetap tersedia.
+
+           raw true:
+           nilai asli tidak dipaksa menjadi string.
+        ========================================== */
+
         const workbook =
             XLSX.read(
-
                 buffer,
-
                 {
-
                     type: "array",
-
-                    cellDates: true
-
+                    cellDates: true,
+                    cellNF: true
                 }
-
             );
 
 
@@ -1857,7 +1545,6 @@ async function uploadExcel() {
             throw new Error(
                 "Sheet Excel tidak ditemukan."
             );
-
         }
 
 
@@ -1868,17 +1555,12 @@ async function uploadExcel() {
 
 
         const dataExcel =
-
             XLSX.utils.sheet_to_json(
-
                 sheet,
-
                 {
-
-                    defval: ""
-
+                    defval: "",
+                    raw: true
                 }
-
             );
 
 
@@ -1889,17 +1571,18 @@ async function uploadExcel() {
             throw new Error(
                 "Data Excel kosong."
             );
-
         }
 
 
         let berhasil = 0;
-
         let gagal = 0;
 
         const errors = [];
 
 
+        /* =========================================
+           LOOP DATA EXCEL
+        ========================================== */
 
         for (
             let i = 0;
@@ -1907,35 +1590,29 @@ async function uploadExcel() {
             i++
         ) {
 
-
             const row =
                 dataExcel[i];
 
-
             try {
 
+                /* =================================
+                   AMBIL KOLOM
+                ================================= */
 
                 const rowDate =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Tanggal",
                             "Date",
                             "Tgl"
                         ]
-
                     );
 
 
                 const rowSap =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "SAP",
                             "SAP ID",
@@ -1943,104 +1620,81 @@ async function uploadExcel() {
                             "User SAP",
                             "UserSap"
                         ]
-
                     );
 
 
                 const rowCategory =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Kategori",
                             "Kategori Overtime",
                             "Category"
                         ]
-
                     );
 
 
                 let rowStart =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Mulai",
                             "Jam Mulai",
                             "Start"
                         ]
-
                     );
 
 
                 let rowEnd =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Selesai",
                             "Jam Selesai",
                             "End"
                         ]
-
                     );
 
 
                 let rowHours =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Jam",
                             "Jumlah Jam",
                             "Hours"
                         ]
-
                     );
 
 
                 const rowConversion =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Konversi",
                             "Konversi Jam",
                             "Conversion",
                             "ConversionHours"
                         ]
-
                     );
 
 
                 const rowNote =
-
                     getExcelValue(
-
                         row,
-
                         [
                             "Keterangan",
                             "Note",
                             "Catatan"
                         ]
-
                     );
 
 
+                /* =================================
+                   SAP
+                ================================= */
 
                 const sap =
-
                     String(
                         rowSap || ""
                     ).trim();
@@ -2051,7 +1705,6 @@ async function uploadExcel() {
                     throw new Error(
                         "SAP kosong"
                     );
-
                 }
 
 
@@ -2062,13 +1715,14 @@ async function uploadExcel() {
                     throw new Error(
                         `SAP ${sap} tidak ditemukan di data users`
                     );
-
                 }
 
 
+                /* =================================
+                   TANGGAL EXCEL
+                ================================= */
 
                 const finalDate =
-
                     formatExcelDate(
                         rowDate
                     );
@@ -2079,10 +1733,27 @@ async function uploadExcel() {
                     throw new Error(
                         "Tanggal kosong/tidak valid"
                     );
-
                 }
 
 
+                /* =================================
+                   VALIDASI FORMAT TANGGAL
+                ================================= */
+
+                if (
+                    !/^\d{4}-\d{2}-\d{2}$/
+                        .test(finalDate)
+                ) {
+
+                    throw new Error(
+                        `Format tanggal tidak valid: ${finalDate}`
+                    );
+                }
+
+
+                /* =================================
+                   KATEGORI
+                ================================= */
 
                 const finalCategory =
 
@@ -2100,12 +1771,10 @@ async function uploadExcel() {
                     throw new Error(
                         "Kategori kosong"
                     );
-
                 }
 
 
                 const categoryData =
-
                     overtimeCategory[
                         finalCategory
                     ];
@@ -2116,13 +1785,14 @@ async function uploadExcel() {
                     throw new Error(
                         `Kategori ${finalCategory} tidak valid`
                     );
-
                 }
 
 
+                /* =================================
+                   JAM MULAI
+                ================================= */
 
                 rowStart =
-
                     formatExcelTime(
                         rowStart
                     );
@@ -2132,13 +1802,14 @@ async function uploadExcel() {
 
                     rowStart =
                         categoryData.start;
-
                 }
 
 
+                /* =================================
+                   JAM SELESAI
+                ================================= */
 
                 rowEnd =
-
                     formatExcelTime(
                         rowEnd
                     );
@@ -2148,13 +1819,14 @@ async function uploadExcel() {
 
                     rowEnd =
                         categoryData.end;
-
                 }
 
 
+                /* =================================
+                   JUMLAH JAM
+                ================================= */
 
                 let rawHours =
-
                     parseExcelNumber(
                         rowHours
                     );
@@ -2168,7 +1840,6 @@ async function uploadExcel() {
                         Number(
                             categoryData.hours
                         ) || 0;
-
                 }
 
 
@@ -2179,33 +1850,29 @@ async function uploadExcel() {
                     throw new Error(
                         "Jumlah jam tidak valid"
                     );
-
                 }
 
 
                 const finalHours =
-
                     calculateHours(
                         rawHours
                     );
 
 
+                /* =================================
+                   KONVERSI
+                ================================= */
 
                 let finalConversion;
 
 
                 if (
-
                     rowConversion !== "" &&
-
                     rowConversion !== null &&
-
                     rowConversion !== undefined
-
                 ) {
 
                     const excelConversion =
-
                         parseExcelNumber(
                             rowConversion
                         );
@@ -2221,32 +1888,33 @@ async function uploadExcel() {
                     } else {
 
                         finalConversion =
-
                             calculateConversionHours(
                                 finalHours
                             );
-
                     }
 
                 } else {
 
                     finalConversion =
-
                         calculateConversionHours(
                             finalHours
                         );
-
                 }
 
 
+                /* =================================
+                   KETERANGAN
+                ================================= */
 
                 const finalNote =
-
                     String(
                         rowNote || ""
                     ).trim();
 
 
+                /* =================================
+                   DATA FIREBASE
+                ================================= */
 
                 const firebaseData = {
 
@@ -2279,13 +1947,14 @@ async function uploadExcel() {
 
                     importedFrom:
                         "excel"
-
                 };
 
 
+                /* =================================
+                   SIMPAN FIREBASE
+                ================================= */
 
                 const newRef =
-
                     push(
                         ref(
                             db,
@@ -2310,22 +1979,21 @@ async function uploadExcel() {
 
                 errors.push(
 
-                    `Baris ${i + 2}: ${error.message}`
+                    `Baris ${i + 2}: ${error?.message || error}`
 
                 );
-
             }
-
         }
 
 
+        /* =========================================
+           HASIL UPLOAD
+        ========================================== */
 
         let resultMessage =
 
             `Upload selesai.\n` +
-
             `Berhasil: ${berhasil} data.\n` +
-
             `Gagal: ${gagal} data.`;
 
 
@@ -2336,9 +2004,7 @@ async function uploadExcel() {
             resultMessage +=
 
                 "\n\nDetail data gagal:\n" +
-
                 errors.join("\n");
-
         }
 
 
@@ -2349,14 +2015,11 @@ async function uploadExcel() {
             gagal
                 ? "error"
                 : "ok"
-
         );
 
 
         if (excelFile) {
-
             excelFile.value = "";
-
         }
 
 
@@ -2364,7 +2027,6 @@ async function uploadExcel() {
 
 
     } catch (error) {
-
 
         console.error(
             "Upload Excel error:",
@@ -2375,16 +2037,15 @@ async function uploadExcel() {
         showExcelMsg(
 
             "Upload gagal: " +
-            error.message,
+            (
+                error?.message ||
+                error
+            ),
 
             "error"
-
         );
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -2394,7 +2055,6 @@ async function uploadExcel() {
 function downloadExcelTemplate() {
 
     try {
-
 
         const templateData = [
 
@@ -2420,7 +2080,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Contoh overtime"
-
             },
 
 
@@ -2446,7 +2105,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Contoh overtime"
-
             },
 
 
@@ -2472,19 +2130,14 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     ""
-
             }
 
         ];
 
 
-
         const worksheet =
-
             XLSX.utils.json_to_sheet(
-
                 templateData
-
             );
 
 
@@ -2521,11 +2174,8 @@ function downloadExcelTemplate() {
         ];
 
 
-
         const workbook =
-
             XLSX.utils.book_new();
-
 
 
         XLSX.utils.book_append_sheet(
@@ -2535,9 +2185,7 @@ function downloadExcelTemplate() {
             worksheet,
 
             "Template Overtime"
-
         );
-
 
 
         const instructionData = [
@@ -2548,8 +2196,7 @@ function downloadExcelTemplate() {
                     "Tanggal",
 
                 "Keterangan":
-                    "Format YYYY-MM-DD, contoh 2026-08-20"
-
+                    "Gunakan format YYYY-MM-DD, contoh 2026-08-20"
             },
 
             {
@@ -2559,7 +2206,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "SAP harus sudah terdaftar di menu Users"
-
             },
 
             {
@@ -2569,7 +2215,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "IOR1 / IOR2 / IOR3 / IPN1 / IPM1"
-
             },
 
             {
@@ -2579,7 +2224,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Boleh dikosongkan, otomatis mengikuti kategori"
-
             },
 
             {
@@ -2589,7 +2233,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Boleh dikosongkan, otomatis mengikuti kategori"
-
             },
 
             {
@@ -2599,7 +2242,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Boleh dikosongkan, otomatis mengikuti kategori"
-
             },
 
             {
@@ -2609,7 +2251,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Keterangan overtime"
-
             },
 
             {
@@ -2619,7 +2260,6 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "4 jam menjadi 3.5 jam, 11 jam menjadi 10.5 jam"
-
             },
 
             {
@@ -2629,19 +2269,14 @@ function downloadExcelTemplate() {
 
                 "Keterangan":
                     "Tidak perlu diisi, sistem menghitung otomatis"
-
             }
 
         ];
 
 
-
         const instructionSheet =
-
             XLSX.utils.json_to_sheet(
-
                 instructionData
-
             );
 
 
@@ -2658,7 +2293,6 @@ function downloadExcelTemplate() {
         ];
 
 
-
         XLSX.utils.book_append_sheet(
 
             workbook,
@@ -2666,9 +2300,7 @@ function downloadExcelTemplate() {
             instructionSheet,
 
             "Petunjuk"
-
         );
-
 
 
         XLSX.writeFile(
@@ -2676,30 +2308,21 @@ function downloadExcelTemplate() {
             workbook,
 
             "Template_Input_Overtime.xlsx"
-
         );
 
 
     } catch (error) {
 
-
         console.error(
-
             "Download template error:",
-
             error
-
         );
-
 
         alert(
             "Template Excel gagal dibuat."
         );
-
     }
-
 }
-
 
 
 /* =====================================================
@@ -2714,9 +2337,7 @@ if (deleteSelectedBtn) {
 
         async () => {
 
-
             const selectedIds =
-
                 getSelectedIds();
 
 
@@ -2729,32 +2350,24 @@ if (deleteSelectedBtn) {
                 );
 
                 return;
-
             }
 
 
             const confirmed =
-
                 confirm(
-
                     `Apakah Anda yakin ingin menghapus ${selectedIds.length} data overtime?`
-
                 );
 
 
             if (!confirmed) {
-
                 return;
-
             }
 
 
             try {
 
-
                 deleteSelectedBtn.disabled =
                     true;
-
 
                 deleteSelectedBtn.textContent =
                     "⏳ Menghapus...";
@@ -2765,28 +2378,19 @@ if (deleteSelectedBtn) {
                     selectedIds.map(
 
                         id =>
-
                             remove(
-
                                 ref(
-
                                     db,
-
                                     "overtime/" +
                                     id
-
                                 )
-
                             )
-
                     )
-
                 );
 
 
                 window.selectedOvertimeIds =
                     [];
-
 
                 resetCheckboxState();
 
@@ -2800,9 +2404,7 @@ if (deleteSelectedBtn) {
                         `${selectedIds.length} data overtime berhasil dihapus.`,
 
                         "ok"
-
                     );
-
                 }
 
 
@@ -2811,12 +2413,10 @@ if (deleteSelectedBtn) {
 
             } catch (error) {
 
-
                 console.error(
                     "Hapus massal error:",
                     error
                 );
-
 
                 alert(
                     "Terjadi kesalahan saat menghapus data."
@@ -2825,22 +2425,15 @@ if (deleteSelectedBtn) {
 
             } finally {
 
-
                 deleteSelectedBtn.disabled =
                     false;
 
-
                 deleteSelectedBtn.textContent =
                     "🗑️ Hapus Terpilih";
-
             }
-
         }
-
     );
-
 }
-
 
 
 /* =====================================================
@@ -2852,14 +2445,11 @@ if (rows) {
     rows.onclick =
         async e => {
 
-
             const ed =
                 e.target.dataset.edit;
 
-
             const del =
                 e.target.dataset.del;
-
 
 
             /* =========================================
@@ -2868,15 +2458,11 @@ if (rows) {
 
             if (del) {
 
-
                 if (
-
                     confirm(
                         "Hapus data overtime ini?"
                     )
-
                 ) {
-
 
                     await remove(
 
@@ -2884,14 +2470,8 @@ if (rows) {
                             db,
                             "overtime/" + del
                         )
-
                     );
 
-
-                    /*
-                     * Jika data yang dihapus
-                     * sedang terpilih
-                     */
 
                     window.selectedOvertimeIds =
 
@@ -2904,16 +2484,11 @@ if (rows) {
                                     id !== del
                             );
 
-
                     updateSelectedCount();
-
                 }
 
-
                 return;
-
             }
-
 
 
             /* =========================================
@@ -2922,16 +2497,13 @@ if (rows) {
 
             if (ed) {
 
-
                 const snapshot =
-
                     await get(
 
                         ref(
                             db,
                             "overtime/" + ed
                         )
-
                     );
 
 
@@ -2944,7 +2516,6 @@ if (rows) {
                     );
 
                     return;
-
                 }
 
 
@@ -2952,79 +2523,60 @@ if (rows) {
                     snapshot.val();
 
 
-
                 if (editId) {
-
                     editId.value =
                         ed;
-
                 }
 
 
                 if (date) {
-
                     date.value =
                         x?.date || "";
-
                 }
 
 
                 if (userSap) {
-
                     userSap.value =
                         x?.userSap || "";
-
                 }
 
 
                 if (category) {
-
                     category.value =
                         x?.category || "";
-
                 }
 
 
                 if (start) {
-
                     start.value =
                         x?.start || "";
-
                 }
 
 
                 if (end) {
-
                     end.value =
                         x?.end || "";
-
                 }
 
 
                 if (hours) {
-
                     hours.value =
                         x?.hours || 0;
-
                 }
 
 
                 if (conversionHours) {
 
                     conversionHours.value =
-
                         getConversionHours(
                             x
                         );
-
                 }
 
 
                 if (note) {
-
                     note.value =
                         x?.note || "";
-
                 }
 
 
@@ -3035,9 +2587,6 @@ if (rows) {
                     behavior: "smooth"
 
                 });
-
             }
-
         };
-
 }
