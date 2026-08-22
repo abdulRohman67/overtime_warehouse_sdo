@@ -13,22 +13,37 @@
 
     <title>Input Overtime</title>
 
+
+    <!-- CSS -->
+
     <link
         rel="stylesheet"
         href="css/style.css"
     >
 
-    <!-- XLSX -->
+
+    <!-- =====================================================
+         XLSX
+    ====================================================== -->
+
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
     ></script>
 
-    <!-- JSPDF -->
+
+    <!-- =====================================================
+         JSPDF
+    ====================================================== -->
+
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
     ></script>
 
-    <!-- JSPDF AUTOTABLE -->
+
+    <!-- =====================================================
+         JSPDF AUTOTABLE
+    ====================================================== -->
+
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"
     ></script>
@@ -46,13 +61,11 @@
     <div id="nav"></div>
 
 
-
     <!-- =====================================================
          KONTEN UTAMA
     ====================================================== -->
 
     <main class="container">
-
 
 
         <!-- =================================================
@@ -68,7 +81,6 @@
         </div>
 
 
-
         <!-- =================================================
              FORM INPUT OVERTIME
         ================================================== -->
@@ -80,12 +92,12 @@
 
                 ℹ️
                 Admin dapat menentukan overtime
-                untuk user tertentu. User hanya akan
-                melihat data yang ditujukan kepada
-                SAP ID mereka.
+                untuk user tertentu.
+
+                User hanya akan melihat data
+                yang ditujukan kepada SAP ID mereka.
 
             </div>
-
 
 
             <form
@@ -95,7 +107,9 @@
             >
 
 
-                <!-- ID EDIT -->
+                <!-- =================================================
+                     ID EDIT
+                ================================================== -->
 
                 <input
                     type="hidden"
@@ -103,8 +117,9 @@
                 >
 
 
-
-                <!-- TANGGAL -->
+                <!-- =================================================
+                     TANGGAL
+                ================================================== -->
 
                 <label>
 
@@ -119,8 +134,9 @@
                 </label>
 
 
-
-                <!-- USER TUJUAN -->
+                <!-- =================================================
+                     USER TUJUAN
+                ================================================== -->
 
                 <label>
 
@@ -129,13 +145,20 @@
                     <select
                         id="userSap"
                         required
-                    ></select>
+                    >
+
+                        <option value="">
+                            Pilih user
+                        </option>
+
+                    </select>
 
                 </label>
 
 
-
-                <!-- KATEGORI OVERTIME -->
+                <!-- =================================================
+                     KATEGORI OVERTIME
+                ================================================== -->
 
                 <label>
 
@@ -175,8 +198,9 @@
                 </label>
 
 
-
-                <!-- JAM MULAI -->
+                <!-- =================================================
+                     JAM MULAI
+                ================================================== -->
 
                 <label>
 
@@ -191,8 +215,9 @@
                 </label>
 
 
-
-                <!-- JAM SELESAI -->
+                <!-- =================================================
+                     JAM SELESAI
+                ================================================== -->
 
                 <label>
 
@@ -207,8 +232,9 @@
                 </label>
 
 
-
-                <!-- JUMLAH JAM -->
+                <!-- =================================================
+                     JUMLAH JAM
+                ================================================== -->
 
                 <label>
 
@@ -225,8 +251,9 @@
                 </label>
 
 
-
-                <!-- KONVERSI JAM -->
+                <!-- =================================================
+                     KONVERSI JAM
+                ================================================== -->
 
                 <label>
 
@@ -243,8 +270,9 @@
                 </label>
 
 
-
-                <!-- KETERANGAN -->
+                <!-- =================================================
+                     KETERANGAN
+                ================================================== -->
 
                 <label>
 
@@ -258,20 +286,17 @@
                 </label>
 
 
-
-                <!-- AKSI -->
+                <!-- =================================================
+                     AKSI
+                ================================================== -->
 
                 <div class="actions full">
-
 
                     <button
                         type="submit"
                     >
-
                         💾 Simpan
-
                     </button>
-
 
 
                     <button
@@ -279,34 +304,29 @@
                         class="secondary"
                         id="resetBtn"
                     >
-
                         🔄 Reset
-
                     </button>
 
-
                 </div>
-
 
             </form>
 
 
-
-            <!-- PESAN -->
+            <!-- =================================================
+                 PESAN FORM
+            ================================================== -->
 
             <div
                 id="msg"
                 class="message"
             ></div>
 
-
         </div>
 
 
-
-        <!-- =================================================
+        <!-- =====================================================
              UPLOAD EXCEL
-        ================================================== -->
+        ====================================================== -->
 
         <div class="panel">
 
@@ -320,24 +340,26 @@
             </div>
 
 
-
             <div class="notice">
 
                 ℹ️
-                Gunakan fitur ini untuk memasukkan banyak
-                data overtime sekaligus tanpa input satu per satu.
+                Gunakan fitur ini untuk memasukkan
+                banyak data overtime sekaligus.
 
                 <br><br>
 
                 Format file yang didukung:
-                <strong>.xlsx</strong> dan
+
+                <strong>.xlsx</strong>
+                dan
                 <strong>.xls</strong>.
 
             </div>
 
 
-
-            <!-- AKSI EXCEL -->
+            <!-- =================================================
+                 INPUT FILE
+            ================================================== -->
 
             <div
                 class="actions"
@@ -350,7 +372,6 @@
                 "
             >
 
-
                 <input
                     type="file"
                     id="excelFile"
@@ -358,16 +379,12 @@
                 >
 
 
-
                 <button
                     type="button"
                     id="uploadExcelBtn"
                 >
-
                     📤 Upload Excel
-
                 </button>
-
 
 
                 <button
@@ -375,77 +392,146 @@
                     class="secondary"
                     id="downloadTemplateBtn"
                 >
-
                     📥 Download Template Excel
-
                 </button>
-
 
             </div>
 
 
-
-            <!-- PESAN EXCEL -->
+            <!-- =================================================
+                 PESAN EXCEL
+            ================================================== -->
 
             <div
                 id="excelMsg"
                 class="message"
-                style="margin-top:10px"
+                style="
+                    margin-top:10px;
+                    white-space:pre-line;
+                "
             ></div>
 
 
-
-            <!-- INFORMASI FORMAT -->
+            <!-- =================================================
+                 PETUNJUK FORMAT EXCEL
+            ================================================== -->
 
             <div
                 style="
                     margin-top:15px;
                     font-size:13px;
-                    line-height:1.6;
+                    line-height:1.7;
                 "
             >
 
                 <strong>
-                    Format kolom Excel:
+                    📌 FORMAT KOLOM EXCEL
                 </strong>
 
-                <br>
+                <br><br>
 
                 <code>
                     Tanggal | SAP | Kategori | Mulai | Selesai | Jam | Keterangan
                 </code>
 
+
                 <br><br>
 
+
                 <strong>
-                    Contoh:
+                    📅 FORMAT TANGGAL
                 </strong>
 
                 <br>
+
+                Gunakan format:
+
+                <code>
+                    YYYY-MM-DD
+                </code>
+
+                <br>
+
+                Contoh:
+
+                <code>
+                    2026-08-20
+                </code>
+
+                <br><br>
+
+                <strong>
+                    Contoh data Excel:
+                </strong>
+
+                <br><br>
 
                 <code>
                     2026-08-20 | 10001 | IOR1 | 13:00 | 15:00 | 2 | Overtime
                 </code>
 
+                <br>
+
+                <code>
+                    2026-08-21 | 10002 | IOR2 | 21:00 | 23:00 | 2 | Overtime
+                </code>
+
+                <br>
+
+                <code>
+                    2026-08-22 | 10003 | IPN1 | 19:00 | 23:00 | 4 | Overtime
+                </code>
+
+
                 <br><br>
+
+
+                <strong>
+                    ⚠️ Catatan tanggal
+                </strong>
+
+                <br>
+
+                Jangan gunakan format:
+
+                <code>
+                    08/20/2026
+                </code>
+
+                <br>
+
+                Format yang disarankan:
+
+                <code>
+                    2026-08-20
+                </code>
+
+
+                <br><br>
+
+
+                <strong>
+                    🔄 KONVERSI JAM
+                </strong>
+
+                <br>
 
                 Kolom
                 <strong>Konversi</strong>
                 tidak wajib diisi.
 
-                Jika dikosongkan, sistem akan
-                menghitung konversi otomatis.
+                Jika dikosongkan,
+                sistem akan menghitung
+                konversi secara otomatis.
 
             </div>
-
 
         </div>
 
 
-
-        <!-- =================================================
+        <!-- =====================================================
              DATA OVERTIME
-        ================================================== -->
+        ====================================================== -->
 
         <div class="panel">
 
@@ -454,11 +540,8 @@
 
 
                 <h3>
-
                     📋 Data Overtime
-
                 </h3>
-
 
 
                 <input
@@ -467,9 +550,7 @@
                     placeholder="Cari SAP, nama, tanggal..."
                 >
 
-
             </div>
-
 
 
             <!-- =================================================
@@ -492,9 +573,7 @@
                     class="danger"
                     id="deleteSelectedBtn"
                 >
-
                     🗑️ Hapus Terpilih
-
                 </button>
 
 
@@ -502,13 +581,10 @@
                     id="selectedCount"
                     style="font-size:14px"
                 >
-
                     0 data dipilih
-
                 </span>
 
             </div>
-
 
 
             <!-- =================================================
@@ -517,17 +593,14 @@
 
             <div class="table-wrap">
 
-
                 <table>
 
-
                     <thead>
-
 
                         <tr>
 
 
-                            <!-- CHECKBOX PILIH SEMUA -->
+                            <!-- PILIH SEMUA -->
 
                             <th
                                 style="
@@ -589,30 +662,22 @@
                                 Aksi
                             </th>
 
-
                         </tr>
-
 
                     </thead>
 
 
-
                     <tbody id="rows">
-
                     </tbody>
-
 
                 </table>
 
-
             </div>
-
 
         </div>
 
 
     </main>
-
 
 
     <!-- =====================================================
