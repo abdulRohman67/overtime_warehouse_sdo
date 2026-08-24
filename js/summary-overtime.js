@@ -79,7 +79,6 @@ const userCount =
 const grandTotal =
     document.getElementById("grandTotal");
 
-// GRAND TOTAL KONVERSI DI CARD ATAS
 const grandConversion =
     document.getElementById("grandConversion");
 
@@ -89,6 +88,9 @@ const tableGrandTotal =
 const periodLabel =
     document.getElementById("periodLabel");
 
+const overtimeChartCanvas =
+    document.getElementById("overtimeChart");
+
 
 // =====================================================
 // DATA
@@ -97,6 +99,8 @@ const periodLabel =
 let users = {};
 
 let overtime = [];
+
+let overtimeChart = null;
 
 
 // =====================================================
@@ -127,13 +131,6 @@ setDefaultPeriod();
 // =====================================================
 // KONVERSI DATA LAMA
 // =====================================================
-//
-// Hanya digunakan untuk data lama yang belum
-// mempunyai conversionHours.
-//
-// Data baru mengambil conversionHours langsung
-// dari Firebase.
-// =====================================================
 
 function calculateConversionHours(value) {
 
@@ -161,9 +158,7 @@ function calculateConversionHours(value) {
 
         8: 17,
 
-        3.5: 6.5,
-
-        1.5 : 2.5
+        1.5: 2.5
 
     };
 
@@ -192,10 +187,6 @@ function getConversionHours(item) {
 
     // =================================================
     // DATA BARU
-    // =================================================
-    //
-    // Ambil conversionHours langsung dari Firebase.
-    //
     // =================================================
 
     if (
@@ -367,23 +358,6 @@ async function loadData() {
 // =====================================================
 // GET SUMMARY
 // =====================================================
-//
-// SETIAP DATA OVERTIME DIJUMLAHKAN.
-//
-// JAM:
-//
-// item 1 hours
-// + item 2 hours
-// + item 3 hours
-//
-// KONVERSI:
-//
-// item 1 conversionHours
-// + item 2 conversionHours
-// + item 3 conversionHours
-//
-// TIDAK ADA KONVERSI ULANG DARI TOTAL JAM.
-// =====================================================
 
 function getSummary() {
 
@@ -474,9 +448,7 @@ function getSummary() {
                 ).trim();
 
 
-            // =========================================
             // FILTER DARI
-            // =========================================
 
             if (
                 from &&
@@ -488,9 +460,7 @@ function getSummary() {
             }
 
 
-            // =========================================
             // FILTER SAMPAI
-            // =========================================
 
             if (
                 to &&
@@ -502,9 +472,7 @@ function getSummary() {
             }
 
 
-            // =========================================
             // USER TIDAK TERDAFTAR
-            // =========================================
 
             if (
                 !summary[sap]
@@ -515,9 +483,7 @@ function getSummary() {
             }
 
 
-            // =========================================
-            // JAM DARI RINCIAN
-            // =========================================
+            // JAM
 
             const hours =
                 Number(
@@ -525,9 +491,7 @@ function getSummary() {
                 );
 
 
-            // =========================================
-            // KONVERSI DARI RINCIAN
-            // =========================================
+            // KONVERSI
 
             const conversion =
                 getConversionHours(
@@ -535,9 +499,7 @@ function getSummary() {
                 );
 
 
-            // =========================================
             // TAMBAH JAM
-            // =========================================
 
             if (
                 Number.isFinite(hours)
@@ -549,9 +511,7 @@ function getSummary() {
             }
 
 
-            // =========================================
             // TAMBAH KONVERSI
-            // =========================================
 
             if (
                 Number.isFinite(conversion)
@@ -563,9 +523,7 @@ function getSummary() {
             }
 
 
-            // =========================================
             // JUMLAH DATA
-            // =========================================
 
             summary[sap].count +=
                 1;
@@ -575,7 +533,7 @@ function getSummary() {
 
 
     // =================================================
-    // SORT BERDASARKAN NAMA
+    // SORT NAMA
     // =================================================
 
     return Object.values(
@@ -664,6 +622,326 @@ function formatDate(value) {
 
 
 // =====================================================
+// RENDER GRAFIK
+// =====================================================
+
+function renderChart(data) {
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        console.warn(
+            "Chart.js belum dimuat."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        typeof ChartDataLabels ===
+        "undefined"
+    ) {
+
+        console.warn(
+            "ChartDataLabels belum dimuat."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !overtimeChartCanvas
+    ) {
+
+        return;
+
+    }
+
+
+    // =================================================
+    // HAPUS GRAFIK LAMA
+    // =================================================
+
+    if (
+        overtimeChart
+    ) {
+
+        overtimeChart.destroy();
+
+        overtimeChart = null;
+
+    }
+
+
+    // =================================================
+    // LABEL USER
+    // =================================================
+
+    const labels =
+        data.map(
+            item =>
+                String(
+                    item.name
+                )
+        );
+
+
+    // =================================================
+    // JUMLAH JAM
+    // =================================================
+
+    const values =
+        data.map(
+            item =>
+                Number(
+                    item.hours || 0
+                )
+        );
+
+
+    // =================================================
+    // BUAT GRAFIK
+    // =================================================
+
+    overtimeChart =
+        new Chart(
+            overtimeChartCanvas,
+            {
+
+                // BATANG VERTIKAL
+                type:
+                    "bar",
+
+
+                // PLUGIN LABEL
+                plugins: [
+
+                    ChartDataLabels
+
+                ],
+
+
+                data: {
+
+                    labels:
+                        labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Jumlah Jam Overtime",
+
+                            data:
+                                values,
+
+                            backgroundColor:
+                                "rgba(54, 162, 235, 0.75)",
+
+                            borderColor:
+                                "rgba(54, 162, 235, 1)",
+
+                            borderWidth:
+                                1,
+
+                            borderRadius:
+                                5,
+
+                            maxBarThickness:
+                                55
+
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    animation:
+                        false,
+
+
+                    plugins: {
+
+                        // =================================
+                        // LEGEND
+                        // =================================
+
+                        legend: {
+
+                            display:
+                                true
+
+                        },
+
+
+                        // =================================
+                        // JUDUL
+                        // =================================
+
+                        title: {
+
+                            display:
+                                true,
+
+                            text:
+                                "Jumlah Jam Overtime Berdasarkan Nama User"
+
+                        },
+
+
+                        // =================================
+                        // TOTAL JAM DI ATAS BATANG
+                        // =================================
+
+                        datalabels: {
+
+                            display:
+                                true,
+
+                            anchor:
+                                "end",
+
+                            align:
+                                "top",
+
+                            offset:
+                                4,
+
+                            color:
+                                "#000000",
+
+                            font: {
+
+                                weight:
+                                    "bold",
+
+                                size:
+                                    12
+
+                            },
+
+                            formatter:
+                                function(value) {
+
+                                    return formatNumber(
+                                        value
+                                    );
+
+                                }
+
+                        }
+
+                    },
+
+
+                    // =================================
+                    // SUMBU
+                    // =================================
+
+                    scales: {
+
+                        x: {
+
+                            title: {
+
+                                display:
+                                    true,
+
+                                text:
+                                    "Nama User"
+
+                            }
+
+                        },
+
+
+                        y: {
+
+                            beginAtZero:
+                                true,
+
+                            title: {
+
+                                display:
+                                    true,
+
+                                text:
+                                    "Jumlah Jam"
+
+                            },
+
+                            ticks: {
+
+                                precision:
+                                    2
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+// =====================================================
+// AMBIL GAMBAR GRAFIK
+// =====================================================
+
+function getChartImage() {
+
+    if (
+        !overtimeChartCanvas
+    ) {
+
+        return null;
+
+    }
+
+
+    try {
+
+        return overtimeChartCanvas.toDataURL(
+            "image/png",
+            1.0
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Gagal mengambil gambar grafik:",
+            error
+        );
+
+        return null;
+
+    }
+
+}
+
+
+// =====================================================
 // RENDER
 // =====================================================
 
@@ -681,7 +959,7 @@ function render() {
 
 
     // =================================================
-    // GRAND TOTAL JAM
+    // TOTAL JAM
     // =================================================
 
     const totalHours =
@@ -704,7 +982,7 @@ function render() {
 
 
     // =================================================
-    // GRAND TOTAL KONVERSI
+    // TOTAL KONVERSI
     // =================================================
 
     const totalConversion =
@@ -727,7 +1005,7 @@ function render() {
 
 
     // =================================================
-    // JUMLAH USER
+    // USER COUNT
     // =================================================
 
     if (userCount) {
@@ -739,7 +1017,7 @@ function render() {
 
 
     // =================================================
-    // GRAND TOTAL JAM CARD
+    // GRAND TOTAL CARD
     // =================================================
 
     if (grandTotal) {
@@ -753,7 +1031,7 @@ function render() {
 
 
     // =================================================
-    // GRAND TOTAL KONVERSI CARD
+    // GRAND CONVERSION CARD
     // =================================================
 
     if (grandConversion) {
@@ -767,7 +1045,7 @@ function render() {
 
 
     // =================================================
-    // PERIOD LABEL
+    // PERIODE
     // =================================================
 
     if (periodLabel) {
@@ -786,7 +1064,7 @@ function render() {
 
 
     // =================================================
-    // DATA KOSONG
+    // TABEL
     // =================================================
 
     if (
@@ -811,10 +1089,6 @@ function render() {
         `;
 
     } else {
-
-        // =============================================
-        // TABEL
-        // =============================================
 
         rows.innerHTML =
             data
@@ -864,7 +1138,7 @@ function render() {
 
 
     // =================================================
-    // FOOTER GRAND TOTAL JAM
+    // GRAND TOTAL TABEL
     // =================================================
 
     if (tableGrandTotal) {
@@ -876,10 +1150,6 @@ function render() {
 
     }
 
-
-    // =================================================
-    // FOOTER GRAND TOTAL KONVERSI
-    // =================================================
 
     const conversionFooter =
         document.getElementById(
@@ -895,6 +1165,15 @@ function render() {
             );
 
     }
+
+
+    // =================================================
+    // GRAFIK
+    // =================================================
+
+    renderChart(
+        data
+    );
 
 }
 
@@ -934,17 +1213,17 @@ if (resetBtn) {
 
 
 // =====================================================
-// EXCEL
+// EXPORT EXCEL
 // =====================================================
 
 if (excelBtn) {
 
     excelBtn.addEventListener(
         "click",
-        () => {
+        async () => {
 
             if (
-                typeof XLSX ===
+                typeof ExcelJS ===
                 "undefined"
             ) {
 
@@ -974,40 +1253,6 @@ if (excelBtn) {
             }
 
 
-            const exportData =
-                data.map(
-                    (
-                        item,
-                        index
-                    ) => ({
-
-                        No:
-                            index + 1,
-
-                        "SAP ID":
-                            item.sapId,
-
-                        "Nama User":
-                            item.name,
-
-                        "Jumlah Jam":
-                            formatNumber(
-                                item.hours
-                            ),
-
-                        "Konversi Lembur":
-                            formatNumber(
-                                item.conversion
-                            )
-
-                    })
-                );
-
-
-            // =========================================
-            // GRAND TOTAL
-            // =========================================
-
             const totalHours =
                 data.reduce(
                     (
@@ -1036,49 +1281,461 @@ if (excelBtn) {
                 );
 
 
-            exportData.push({
+            // =================================================
+            // WORKBOOK
+            // =================================================
 
-                No:
-                    "",
+            const workbook =
+                new ExcelJS.Workbook();
 
-                "SAP ID":
-                    "",
 
-                "Nama User":
-                    "GRAND TOTAL",
+            workbook.creator =
+                "Summary Overtime";
 
-                "Jumlah Jam":
-                    formatNumber(
-                        totalHours
-                    ),
 
-                "Konversi Lembur":
-                    formatNumber(
-                        totalConversion
-                    )
-
-            });
+            workbook.created =
+                new Date();
 
 
             const worksheet =
-                XLSX.utils.json_to_sheet(
-                    exportData
+                workbook.addWorksheet(
+                    "Summary Overtime"
                 );
 
 
-            const workbook =
-                XLSX.utils.book_new();
+            // =================================================
+            // JUDUL
+            // =================================================
 
-
-            XLSX.utils.book_append_sheet(
-                workbook,
-                worksheet,
-                "Summary Overtime"
+            worksheet.mergeCells(
+                "A1:E1"
             );
 
 
-            XLSX.writeFile(
-                workbook,
+            worksheet.getCell(
+                "A1"
+            ).value =
+                "Summary Overtime";
+
+
+            worksheet.getCell(
+                "A1"
+            ).font = {
+
+                bold:
+                    true,
+
+                size:
+                    16
+
+            };
+
+
+            worksheet.mergeCells(
+                "A2:E2"
+            );
+
+
+            worksheet.getCell(
+                "A2"
+            ).value =
+                "Periode: " +
+                formatDate(
+                    fromInput?.value
+                ) +
+                " s/d " +
+                formatDate(
+                    toInput?.value
+                );
+
+
+            // =================================================
+            // HEADER
+            // =================================================
+
+            worksheet.addRow([]);
+
+
+            const headerRow =
+                worksheet.addRow([
+
+                    "No",
+
+                    "SAP ID",
+
+                    "Nama User",
+
+                    "Jumlah Jam",
+
+                    "Konversi Lembur"
+
+                ]);
+
+
+            headerRow.eachCell(
+                cell => {
+
+                    cell.font = {
+
+                        bold:
+                            true,
+
+                        color: {
+
+                            argb:
+                                "FFFFFFFF"
+
+                        }
+
+                    };
+
+
+                    cell.fill = {
+
+                        type:
+                            "pattern",
+
+                        pattern:
+                            "solid",
+
+                        fgColor: {
+
+                            argb:
+                                "4472C4"
+
+                        }
+
+                    };
+
+
+                    cell.alignment = {
+
+                        horizontal:
+                            "center",
+
+                        vertical:
+                            "middle"
+
+                    };
+
+                }
+            );
+
+
+            // =================================================
+            // DATA
+            // =================================================
+
+            data.forEach(
+                (
+                    item,
+                    index
+                ) => {
+
+                    worksheet.addRow([
+
+                        index + 1,
+
+                        item.sapId,
+
+                        item.name,
+
+                        Number(
+                            item.hours || 0
+                        ),
+
+                        Number(
+                            item.conversion || 0
+                        )
+
+                    ]);
+
+                }
+            );
+
+
+            // =================================================
+            // GRAND TOTAL
+            // =================================================
+
+            const totalRow =
+                worksheet.addRow([
+
+                    "",
+
+                    "",
+
+                    "GRAND TOTAL",
+
+                    totalHours,
+
+                    totalConversion
+
+                ]);
+
+
+            totalRow.eachCell(
+                cell => {
+
+                    cell.font = {
+
+                        bold:
+                            true
+
+                    };
+
+
+                    cell.fill = {
+
+                        type:
+                            "pattern",
+
+                        pattern:
+                            "solid",
+
+                        fgColor: {
+
+                            argb:
+                                "D9EAF7"
+
+                        }
+
+                    };
+
+                }
+            );
+
+
+            // =================================================
+            // BORDER
+            // =================================================
+
+            worksheet.eachRow(
+                (
+                    row,
+                    rowNumber
+                ) => {
+
+                    if (
+                        rowNumber < 4
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    row.eachCell(
+                        cell => {
+
+                            cell.border = {
+
+                                top: {
+
+                                    style:
+                                        "thin",
+
+                                    color: {
+
+                                        argb:
+                                            "BFBFBF"
+
+                                    }
+
+                                },
+
+                                left: {
+
+                                    style:
+                                        "thin",
+
+                                    color: {
+
+                                        argb:
+                                            "BFBFBF"
+
+                                    }
+
+                                },
+
+                                bottom: {
+
+                                    style:
+                                        "thin",
+
+                                    color: {
+
+                                        argb:
+                                            "BFBFBF"
+
+                                    }
+
+                                },
+
+                                right: {
+
+                                    style:
+                                        "thin",
+
+                                    color: {
+
+                                        argb:
+                                            "BFBFBF"
+
+                                    }
+
+                                }
+
+                            };
+
+                        }
+                    );
+
+                }
+            );
+
+
+            // =================================================
+            // LEBAR KOLOM
+            // =================================================
+
+            worksheet.getColumn(1).width =
+                8;
+
+            worksheet.getColumn(2).width =
+                18;
+
+            worksheet.getColumn(3).width =
+                30;
+
+            worksheet.getColumn(4).width =
+                18;
+
+            worksheet.getColumn(5).width =
+                22;
+
+
+            // =================================================
+            // GRAFIK
+            // =================================================
+
+            const chartImage =
+                getChartImage();
+
+
+            if (
+                chartImage
+            ) {
+
+                const imageId =
+                    workbook.addImage({
+
+                        base64:
+                            chartImage,
+
+                        extension:
+                            "png"
+
+                    });
+
+
+                const chartStartRow =
+                    data.length + 8;
+
+
+                worksheet.mergeCells(
+                    `A${chartStartRow}:E${chartStartRow}`
+                );
+
+
+                worksheet.getCell(
+                    `A${chartStartRow}`
+                ).value =
+                    "Grafik Overtime Berdasarkan Nama User";
+
+
+                worksheet.getCell(
+                    `A${chartStartRow}`
+                ).font = {
+
+                    bold:
+                        true,
+
+                    size:
+                        14
+
+                };
+
+
+                worksheet.addImage(
+                    imageId,
+                    {
+
+                        tl: {
+
+                            col:
+                                0,
+
+                            row:
+                                chartStartRow
+
+                        },
+
+                        ext: {
+
+                            width:
+                                850,
+
+                            height:
+                                430
+
+                        }
+
+                    }
+                );
+
+            }
+
+
+            // =================================================
+            // DOWNLOAD
+            // =================================================
+
+            const buffer =
+                await workbook.xlsx.writeBuffer();
+
+
+            const blob =
+                new Blob(
+                    [
+                        buffer
+                    ],
+                    {
+
+                        type:
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.href =
+                url;
+
+
+            link.download =
                 "summary-overtime-" +
                 (
                     fromInput?.value ||
@@ -1089,7 +1746,24 @@ if (excelBtn) {
                     toInput?.value ||
                     ""
                 ) +
-                ".xlsx"
+                ".xlsx";
+
+
+            document.body.appendChild(
+                link
+            );
+
+
+            link.click();
+
+
+            document.body.removeChild(
+                link
+            );
+
+
+            URL.revokeObjectURL(
+                url
             );
 
         }
@@ -1099,7 +1773,7 @@ if (excelBtn) {
 
 
 // =====================================================
-// PDF
+// EXPORT PDF
 // =====================================================
 
 if (pdfBtn) {
@@ -1146,7 +1820,11 @@ if (pdfBtn) {
 
 
             const doc =
-                new jsPDF();
+                new jsPDF(
+                    "landscape",
+                    "mm",
+                    "a4"
+                );
 
 
             const totalHours =
@@ -1176,6 +1854,10 @@ if (pdfBtn) {
                     0
                 );
 
+
+            // =================================================
+            // JUDUL
+            // =================================================
 
             doc.setFontSize(
                 16
@@ -1208,6 +1890,10 @@ if (pdfBtn) {
             );
 
 
+            // =================================================
+            // CEK AUTOTABLE
+            // =================================================
+
             if (
                 typeof doc.autoTable !==
                 "function"
@@ -1221,6 +1907,10 @@ if (pdfBtn) {
 
             }
 
+
+            // =================================================
+            // TABEL
+            // =================================================
 
             doc.autoTable({
 
@@ -1293,6 +1983,77 @@ if (pdfBtn) {
 
             });
 
+
+            // =================================================
+            // GRAFIK DI BAWAH TABEL
+            // =================================================
+
+            const chartImage =
+                getChartImage();
+
+
+            if (
+                chartImage
+            ) {
+
+                let chartY =
+                    doc.lastAutoTable.finalY +
+                    12;
+
+
+                const pageHeight =
+                    doc.internal.pageSize.height;
+
+
+                const chartHeight =
+                    85;
+
+
+                // =================================================
+                // JIKA TIDAK MUAT
+                // =================================================
+
+                if (
+                    chartY +
+                    chartHeight >
+                    pageHeight - 10
+                ) {
+
+                    doc.addPage();
+
+                    chartY =
+                        15;
+
+                }
+
+
+                doc.setFontSize(
+                    13
+                );
+
+
+                doc.text(
+                    "Grafik Overtime Berdasarkan Nama User",
+                    14,
+                    chartY
+                );
+
+
+                doc.addImage(
+                    chartImage,
+                    "PNG",
+                    14,
+                    chartY + 5,
+                    268,
+                    chartHeight
+                );
+
+            }
+
+
+            // =================================================
+            // SAVE
+            // =================================================
 
             doc.save(
                 "summary-overtime-" +
