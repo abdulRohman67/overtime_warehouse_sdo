@@ -142,6 +142,8 @@ function calculateConversionHours(value) {
 
         1: 1.5,
 
+        1.5: 2.5,
+
         2: 3.5,
 
         3: 5.5,
@@ -156,9 +158,7 @@ function calculateConversionHours(value) {
 
         7: 14,
 
-        8: 17,
-
-        1.5: 2.5
+        8: 17
 
     };
 
@@ -185,10 +185,6 @@ function getConversionHours(item) {
     }
 
 
-    // =================================================
-    // DATA BARU
-    // =================================================
-
     if (
         item.conversionHours !== undefined &&
         item.conversionHours !== null &&
@@ -211,10 +207,6 @@ function getConversionHours(item) {
 
     }
 
-
-    // =================================================
-    // DATA LAMA
-    // =================================================
 
     return calculateConversionHours(
         item.hours || 0
@@ -356,6 +348,164 @@ async function loadData() {
 
 
 // =====================================================
+// NORMALISASI TANGGAL
+// =====================================================
+
+function normalizeDate(value) {
+
+    if (!value) {
+
+        return "";
+
+    }
+
+
+    const text =
+        String(
+            value
+        ).trim();
+
+
+    // =================================================
+    // YYYY-MM-DD
+    // =================================================
+
+    if (
+        /^\d{4}-\d{2}-\d{2}$/.test(
+            text
+        )
+    ) {
+
+        return text;
+
+    }
+
+
+    // =================================================
+    // YYYY-MM-DD HH:mm:ss
+    // =================================================
+
+    if (
+        /^\d{4}-\d{2}-\d{2}/.test(
+            text
+        )
+    ) {
+
+        return text.substring(
+            0,
+            10
+        );
+
+    }
+
+
+    // =================================================
+    // DD-MM-YYYY
+    // =================================================
+
+    let match =
+        text.match(
+            /^(\d{2})-(\d{2})-(\d{4})$/
+        );
+
+
+    if (match) {
+
+        return (
+
+            match[3] +
+            "-" +
+            match[2] +
+            "-" +
+            match[1]
+
+        );
+
+    }
+
+
+    // =================================================
+    // DD/MM/YYYY
+    // =================================================
+
+    match =
+        text.match(
+            /^(\d{2})\/(\d{2})\/(\d{4})$/
+        );
+
+
+    if (match) {
+
+        return (
+
+            match[3] +
+            "-" +
+            match[2] +
+            "-" +
+            match[1]
+
+        );
+
+    }
+
+
+    // =================================================
+    // FORMAT DATE LAIN
+    // =================================================
+
+    const parsed =
+        new Date(
+            text
+        );
+
+
+    if (
+        !Number.isNaN(
+            parsed.getTime()
+        )
+    ) {
+
+        const year =
+            parsed.getFullYear();
+
+
+        const month =
+            String(
+                parsed.getMonth() + 1
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        const day =
+            String(
+                parsed.getDate()
+            ).padStart(
+                2,
+                "0"
+            );
+
+
+        return (
+
+            year +
+            "-" +
+            month +
+            "-" +
+            day
+
+        );
+
+    }
+
+
+    return "";
+
+}
+
+
+// =====================================================
 // GET SUMMARY
 // =====================================================
 
@@ -373,11 +523,23 @@ function getSummary() {
         ).trim();
 
 
+    const filterFrom =
+        normalizeDate(
+            from
+        );
+
+
+    const filterTo =
+        normalizeDate(
+            to
+        );
+
+
     const summary = {};
 
 
     // =================================================
-    // BUAT SEMUA USER
+    // SEMUA USER
     // =================================================
 
     Object.entries(
@@ -430,16 +592,16 @@ function getSummary() {
 
 
     // =================================================
-    // AKUMULASI DATA OVERTIME
+    // AKUMULASI OVERTIME
     // =================================================
 
     overtime.forEach(
         item => {
 
             const date =
-                String(
-                    item?.date || ""
-                ).trim();
+                normalizeDate(
+                    item?.date
+                );
 
 
             const sap =
@@ -448,11 +610,16 @@ function getSummary() {
                 ).trim();
 
 
-            // FILTER DARI
+            if (!date) {
+
+                return;
+
+            }
+
 
             if (
-                from &&
-                date < from
+                filterFrom &&
+                date < filterFrom
             ) {
 
                 return;
@@ -460,19 +627,15 @@ function getSummary() {
             }
 
 
-            // FILTER SAMPAI
-
             if (
-                to &&
-                date > to
+                filterTo &&
+                date > filterTo
             ) {
 
                 return;
 
             }
 
-
-            // USER TIDAK TERDAFTAR
 
             if (
                 !summary[sap]
@@ -483,15 +646,11 @@ function getSummary() {
             }
 
 
-            // JAM
-
             const hours =
                 Number(
                     item?.hours || 0
                 );
 
-
-            // KONVERSI
 
             const conversion =
                 getConversionHours(
@@ -499,10 +658,10 @@ function getSummary() {
                 );
 
 
-            // TAMBAH JAM
-
             if (
-                Number.isFinite(hours)
+                Number.isFinite(
+                    hours
+                )
             ) {
 
                 summary[sap].hours +=
@@ -511,10 +670,10 @@ function getSummary() {
             }
 
 
-            // TAMBAH KONVERSI
-
             if (
-                Number.isFinite(conversion)
+                Number.isFinite(
+                    conversion
+                )
             ) {
 
                 summary[sap].conversion +=
@@ -522,8 +681,6 @@ function getSummary() {
 
             }
 
-
-            // JUMLAH DATA
 
             summary[sap].count +=
                 1;
@@ -611,11 +768,13 @@ function formatDate(value) {
 
 
     return (
+
         p[2] +
         "-" +
         p[1] +
         "-" +
         p[0]
+
     );
 
 }
@@ -628,11 +787,24 @@ function formatDate(value) {
 function renderChart(data) {
 
     if (
+        !overtimeChartCanvas
+    ) {
+
+        console.warn(
+            "Canvas #overtimeChart tidak ditemukan."
+        );
+
+        return;
+
+    }
+
+
+    if (
         typeof Chart ===
         "undefined"
     ) {
 
-        console.warn(
+        console.error(
             "Chart.js belum dimuat."
         );
 
@@ -646,18 +818,9 @@ function renderChart(data) {
         "undefined"
     ) {
 
-        console.warn(
+        console.error(
             "ChartDataLabels belum dimuat."
         );
-
-        return;
-
-    }
-
-
-    if (
-        !overtimeChartCanvas
-    ) {
 
         return;
 
@@ -674,13 +837,14 @@ function renderChart(data) {
 
         overtimeChart.destroy();
 
-        overtimeChart = null;
+        overtimeChart =
+            null;
 
     }
 
 
     // =================================================
-    // LABEL USER
+    // LABEL
     // =================================================
 
     const labels =
@@ -714,12 +878,10 @@ function renderChart(data) {
             overtimeChartCanvas,
             {
 
-                // BATANG VERTIKAL
                 type:
                     "bar",
 
 
-                // PLUGIN LABEL
                 plugins: [
 
                     ChartDataLabels
@@ -776,11 +938,19 @@ function renderChart(data) {
                         false,
 
 
-                    plugins: {
+                    layout: {
 
-                        // =================================
-                        // LEGEND
-                        // =================================
+                        padding: {
+
+                            top:
+                                35
+
+                        }
+
+                    },
+
+
+                    plugins: {
 
                         legend: {
 
@@ -789,10 +959,6 @@ function renderChart(data) {
 
                         },
 
-
-                        // =================================
-                        // JUDUL
-                        // =================================
 
                         title: {
 
@@ -804,10 +970,6 @@ function renderChart(data) {
 
                         },
 
-
-                        // =================================
-                        // TOTAL JAM DI ATAS BATANG
-                        // =================================
 
                         datalabels: {
 
@@ -822,6 +984,12 @@ function renderChart(data) {
 
                             offset:
                                 4,
+
+                            clamp:
+                                true,
+
+                            clip:
+                                false,
 
                             color:
                                 "#000000",
@@ -850,10 +1018,6 @@ function renderChart(data) {
                     },
 
 
-                    // =================================
-                    // SUMBU
-                    // =================================
-
                     scales: {
 
                         x: {
@@ -865,6 +1029,19 @@ function renderChart(data) {
 
                                 text:
                                     "Nama User"
+
+                            },
+
+                            ticks: {
+
+                                autoSkip:
+                                    false,
+
+                                maxRotation:
+                                    45,
+
+                                minRotation:
+                                    0
 
                             }
 
@@ -967,16 +1144,11 @@ function render() {
             (
                 total,
                 item
-            ) => {
-
-                return (
-                    total +
-                    Number(
-                        item.hours || 0
-                    )
-                );
-
-            },
+            ) =>
+                total +
+                Number(
+                    item.hours || 0
+                ),
             0
         );
 
@@ -990,16 +1162,11 @@ function render() {
             (
                 total,
                 item
-            ) => {
-
-                return (
-                    total +
-                    Number(
-                        item.conversion || 0
-                    )
-                );
-
-            },
+            ) =>
+                total +
+                Number(
+                    item.conversion || 0
+                ),
             0
         );
 
@@ -1080,7 +1247,7 @@ function render() {
                     class="empty"
                 >
 
-                    Tidak ada user.
+                    Tidak ada data.
 
                 </td>
 
@@ -1186,7 +1353,11 @@ if (filterBtn) {
 
     filterBtn.addEventListener(
         "click",
-        render
+        function () {
+
+            render();
+
+        }
     );
 
 }
@@ -1200,7 +1371,7 @@ if (resetBtn) {
 
     resetBtn.addEventListener(
         "click",
-        () => {
+        function () {
 
             setDefaultPeriod();
 
@@ -1213,14 +1384,14 @@ if (resetBtn) {
 
 
 // =====================================================
-// EXPORT EXCEL
+// EXCEL
 // =====================================================
 
 if (excelBtn) {
 
     excelBtn.addEventListener(
         "click",
-        async () => {
+        async function () {
 
             if (
                 typeof ExcelJS ===
@@ -1281,20 +1452,8 @@ if (excelBtn) {
                 );
 
 
-            // =================================================
-            // WORKBOOK
-            // =================================================
-
             const workbook =
                 new ExcelJS.Workbook();
-
-
-            workbook.creator =
-                "Summary Overtime";
-
-
-            workbook.created =
-                new Date();
 
 
             const worksheet =
@@ -1349,12 +1508,12 @@ if (excelBtn) {
                 );
 
 
+            worksheet.addRow([]);
+
+
             // =================================================
             // HEADER
             // =================================================
-
-            worksheet.addRow([]);
-
 
             const headerRow =
                 worksheet.addRow([
@@ -1404,17 +1563,6 @@ if (excelBtn) {
                                 "4472C4"
 
                         }
-
-                    };
-
-
-                    cell.alignment = {
-
-                        horizontal:
-                            "center",
-
-                        vertical:
-                            "middle"
 
                     };
 
@@ -1484,119 +1632,12 @@ if (excelBtn) {
 
                     };
 
-
-                    cell.fill = {
-
-                        type:
-                            "pattern",
-
-                        pattern:
-                            "solid",
-
-                        fgColor: {
-
-                            argb:
-                                "D9EAF7"
-
-                        }
-
-                    };
-
                 }
             );
 
 
             // =================================================
-            // BORDER
-            // =================================================
-
-            worksheet.eachRow(
-                (
-                    row,
-                    rowNumber
-                ) => {
-
-                    if (
-                        rowNumber < 4
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    row.eachCell(
-                        cell => {
-
-                            cell.border = {
-
-                                top: {
-
-                                    style:
-                                        "thin",
-
-                                    color: {
-
-                                        argb:
-                                            "BFBFBF"
-
-                                    }
-
-                                },
-
-                                left: {
-
-                                    style:
-                                        "thin",
-
-                                    color: {
-
-                                        argb:
-                                            "BFBFBF"
-
-                                    }
-
-                                },
-
-                                bottom: {
-
-                                    style:
-                                        "thin",
-
-                                    color: {
-
-                                        argb:
-                                            "BFBFBF"
-
-                                    }
-
-                                },
-
-                                right: {
-
-                                    style:
-                                        "thin",
-
-                                    color: {
-
-                                        argb:
-                                            "BFBFBF"
-
-                                    }
-
-                                }
-
-                            };
-
-                        }
-                    );
-
-                }
-            );
-
-
-            // =================================================
-            // LEBAR KOLOM
+            // WIDTH
             // =================================================
 
             worksheet.getColumn(1).width =
@@ -1616,7 +1657,7 @@ if (excelBtn) {
 
 
             // =================================================
-            // GRAFIK
+            // GRAFIK EXCEL
             // =================================================
 
             const chartImage =
@@ -1639,23 +1680,23 @@ if (excelBtn) {
                     });
 
 
-                const chartStartRow =
+                const startRow =
                     data.length + 8;
 
 
                 worksheet.mergeCells(
-                    `A${chartStartRow}:E${chartStartRow}`
+                    `A${startRow}:E${startRow}`
                 );
 
 
                 worksheet.getCell(
-                    `A${chartStartRow}`
+                    `A${startRow}`
                 ).value =
                     "Grafik Overtime Berdasarkan Nama User";
 
 
                 worksheet.getCell(
-                    `A${chartStartRow}`
+                    `A${startRow}`
                 ).font = {
 
                     bold:
@@ -1677,7 +1718,7 @@ if (excelBtn) {
                                 0,
 
                             row:
-                                chartStartRow
+                                startRow
 
                         },
 
@@ -1698,7 +1739,7 @@ if (excelBtn) {
 
 
             // =================================================
-            // DOWNLOAD
+            // DOWNLOAD EXCEL
             // =================================================
 
             const buffer =
@@ -1773,14 +1814,14 @@ if (excelBtn) {
 
 
 // =====================================================
-// EXPORT PDF
+// PDF
 // =====================================================
 
 if (pdfBtn) {
 
     pdfBtn.addEventListener(
         "click",
-        () => {
+        function () {
 
             if (
                 !window.jspdf ||
@@ -1819,6 +1860,10 @@ if (pdfBtn) {
                 window.jspdf;
 
 
+            // =================================================
+            // LANDSCAPE A4
+            // =================================================
+
             const doc =
                 new jsPDF(
                     "landscape",
@@ -1826,6 +1871,18 @@ if (pdfBtn) {
                     "a4"
                 );
 
+
+            const pageWidth =
+                doc.internal.pageSize.getWidth();
+
+
+            const pageHeight =
+                doc.internal.pageSize.getHeight();
+
+
+            // =================================================
+            // TOTAL
+            // =================================================
 
             const totalHours =
                 data.reduce(
@@ -1859,6 +1916,12 @@ if (pdfBtn) {
             // JUDUL
             // =================================================
 
+            doc.setFont(
+                "helvetica",
+                "bold"
+            );
+
+
             doc.setFontSize(
                 16
             );
@@ -1867,12 +1930,18 @@ if (pdfBtn) {
             doc.text(
                 "Summary Overtime",
                 14,
-                15
+                13
+            );
+
+
+            doc.setFont(
+                "helvetica",
+                "normal"
             );
 
 
             doc.setFontSize(
-                10
+                9
             );
 
 
@@ -1886,12 +1955,12 @@ if (pdfBtn) {
                     toInput?.value
                 ),
                 14,
-                22
+                20
             );
 
 
             // =================================================
-            // CEK AUTOTABLE
+            // TABEL
             // =================================================
 
             if (
@@ -1908,14 +1977,104 @@ if (pdfBtn) {
             }
 
 
-            // =================================================
-            // TABEL
-            // =================================================
-
             doc.autoTable({
 
                 startY:
-                    28,
+                    25,
+
+                margin: {
+
+                    left:
+                        14,
+
+                    right:
+                        14
+
+                },
+
+                theme:
+                    "grid",
+
+                styles: {
+
+                    fontSize:
+                        8,
+
+                    cellPadding:
+                        2,
+
+                    valign:
+                        "middle"
+
+                },
+
+                headStyles: {
+
+                    fillColor:
+                        [
+                            68,
+                            114,
+                            196
+                        ],
+
+                    textColor:
+                        255,
+
+                    fontStyle:
+                        "bold",
+
+                    halign:
+                        "center"
+
+                },
+
+                columnStyles: {
+
+                    0: {
+
+                        halign:
+                            "center",
+
+                        cellWidth:
+                            12
+
+                    },
+
+                    1: {
+
+                        cellWidth:
+                            35
+
+                    },
+
+                    2: {
+
+                        cellWidth:
+                            75
+
+                    },
+
+                    3: {
+
+                        halign:
+                            "center",
+
+                        cellWidth:
+                            35
+
+                    },
+
+                    4: {
+
+                        halign:
+                            "center",
+
+                        cellWidth:
+                            40
+
+                    }
+
+                },
 
                 head: [
 
@@ -1979,13 +2138,33 @@ if (pdfBtn) {
 
                     ]
 
-                ]
+                ],
+
+                footStyles: {
+
+                    fillColor:
+                        [
+                            230,
+                            230,
+                            230
+                        ],
+
+                    textColor:
+                        0,
+
+                    fontStyle:
+                        "bold",
+
+                    halign:
+                        "center"
+
+                }
 
             });
 
 
             // =================================================
-            // GRAFIK DI BAWAH TABEL
+            // GRAFIK
             // =================================================
 
             const chartImage =
@@ -1998,61 +2177,82 @@ if (pdfBtn) {
 
                 let chartY =
                     doc.lastAutoTable.finalY +
-                    12;
+                    7;
 
 
-                const pageHeight =
-                    doc.internal.pageSize.height;
+                const chartTitleHeight =
+                    6;
 
 
-                const chartHeight =
-                    85;
+                const bottomMargin =
+                    7;
+
+
+                let chartHeight =
+                    pageHeight -
+                    chartY -
+                    chartTitleHeight -
+                    bottomMargin;
 
 
                 // =================================================
-                // JIKA TIDAK MUAT
+                // PAKSA TETAP DALAM 1 PAGE
                 // =================================================
 
                 if (
-                    chartY +
                     chartHeight >
-                    pageHeight - 10
+                    65
                 ) {
 
-                    doc.addPage();
-
-                    chartY =
-                        15;
+                    chartHeight =
+                        65;
 
                 }
 
 
-                doc.setFontSize(
-                    13
-                );
+                // =================================================
+                // JIKA MASIH ADA RUANG
+                // =================================================
+
+                if (
+                    chartHeight >
+                    25
+                ) {
+
+                    doc.setFont(
+                        "helvetica",
+                        "bold"
+                    );
 
 
-                doc.text(
-                    "Grafik Overtime Berdasarkan Nama User",
-                    14,
-                    chartY
-                );
+                    doc.setFontSize(
+                        10
+                    );
 
 
-                doc.addImage(
-                    chartImage,
-                    "PNG",
-                    14,
-                    chartY + 5,
-                    268,
-                    chartHeight
-                );
+                    doc.text(
+                        "Grafik Overtime Berdasarkan Nama User",
+                        14,
+                        chartY
+                    );
+
+
+                    doc.addImage(
+                        chartImage,
+                        "PNG",
+                        14,
+                        chartY + 4,
+                        pageWidth - 28,
+                        chartHeight
+                    );
+
+                }
 
             }
 
 
             // =================================================
-            // SAVE
+            // SAVE PDF
             // =================================================
 
             doc.save(
