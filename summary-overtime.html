@@ -12,58 +12,34 @@
 
 <title>Summary Overtime</title>
 
-
 <link
     rel="stylesheet"
     href="css/style.css"
 >
 
-
-<!-- =================================================
-     XLSX
-     ================================================= -->
-
 <script
     src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js">
 </script>
-
-
-<!-- =================================================
-     PDF
-     ================================================= -->
 
 <script
     src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
 </script>
 
-
 <script
-    src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js">
+    src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js">
 </script>
 
-
-<!-- =================================================
-     CHART JS
-     ================================================= -->
-
+<!-- CHART JS -->
 <script
     src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js">
 </script>
 
-
-<!-- =================================================
-     LABEL ANGKA GRAFIK
-     ================================================= -->
-
+<!-- LABEL GRAFIK -->
 <script
     src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0">
 </script>
 
-
-<!-- =================================================
-     EXCELJS
-     ================================================= -->
-
+<!-- EXCELJS -->
 <script
     src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js">
 </script>
@@ -73,29 +49,17 @@
 
 <body>
 
-
 <div id="nav"></div>
 
 
 <main class="container">
 
-
-    <!-- =================================================
-         PAGE HEAD
-         ================================================= -->
-
     <div class="page-head">
 
-        <h2>
-            Summary Overtime
-        </h2>
+        <h2>Summary Overtime</h2>
 
     </div>
 
-
-    <!-- =================================================
-         NOTICE
-         ================================================= -->
 
     <div class="panel">
 
@@ -103,6 +67,7 @@
 
             Pilih periode untuk melihat total jam overtime
             dan konversi overtime setiap user.
+
             Default periode: 10 Juli 2026 sampai 10 Agustus 2026.
 
         </div>
@@ -115,7 +80,6 @@
          ================================================= -->
 
     <div class="panel filters">
-
 
         <label>
 
@@ -143,14 +107,11 @@
 
         <div class="filter-actions">
 
-
             <button
                 type="button"
                 id="filterBtn"
             >
-
                 Tampilkan
-
             </button>
 
 
@@ -159,26 +120,20 @@
                 id="resetBtn"
                 class="secondary"
             >
-
                 Reset
-
             </button>
-
 
         </div>
 
 
         <div class="filter-actions">
 
-
             <button
                 type="button"
                 id="excelBtn"
                 class="success"
             >
-
                 Download Excel
-
             </button>
 
 
@@ -186,14 +141,10 @@
                 type="button"
                 id="pdfBtn"
             >
-
                 Download PDF
-
             </button>
 
-
         </div>
-
 
     </div>
 
@@ -204,59 +155,42 @@
 
     <div class="cards">
 
-
         <div class="card">
 
-            <span>
-                Jumlah User
-            </span>
+            <span>Jumlah User</span>
 
-            <b id="userCount">
-                0
-            </b>
+            <b id="userCount">0</b>
 
         </div>
 
 
         <div class="card">
 
-            <span>
-                Grand Total Jam
-            </span>
+            <span>Grand Total Jam</span>
 
-            <b id="grandTotal">
-                0
-            </b>
+            <b id="grandTotal">0</b>
 
         </div>
 
 
         <div class="card">
 
-            <span>
-                Grand Total Konversi
-            </span>
+            <span>Grand Total Konversi</span>
 
-            <b id="grandConversion">
-                0
-            </b>
+            <b id="grandConversion">0</b>
 
         </div>
-
 
     </div>
 
 
     <!-- =================================================
-         SUMMARY TABLE
+         TABEL SUMMARY
          ================================================= -->
 
     <div class="panel">
 
-
-        <h3>
-            Rekap Overtime Per User
-        </h3>
+        <h3>Rekap Overtime Per User</h3>
 
 
         <div
@@ -267,33 +201,21 @@
 
         <div class="table-wrap">
 
-
             <table id="summaryTable">
-
 
                 <thead>
 
                     <tr>
 
-                        <th>
-                            No
-                        </th>
+                        <th>No</th>
 
-                        <th>
-                            SAP ID
-                        </th>
+                        <th>SAP ID</th>
 
-                        <th>
-                            Nama User
-                        </th>
+                        <th>Nama User</th>
 
-                        <th>
-                            Jumlah Jam
-                        </th>
+                        <th>Jumlah Jam</th>
 
-                        <th>
-                            Konversi Overtime
-                        </th>
+                        <th>Konversi Overtime</th>
 
                     </tr>
 
@@ -347,9 +269,7 @@
 
                 </tfoot>
 
-
             </table>
-
 
         </div>
 
@@ -366,11 +286,8 @@
             "
         >
 
-
             <h3>
-
                 Grafik Overtime Berdasarkan Nama User
-
             </h3>
 
 
@@ -382,62 +299,143 @@
                 "
             >
 
-
                 <canvas
                     id="overtimeChart"
                 ></canvas>
 
-
             </div>
-
 
         </div>
 
 
         <!-- =================================================
              GRAFIK LINGKARAN
+             BERDASARKAN KETERANGAN / NOTE
              ================================================= -->
 
         <div
-            class="overtime-pie-chart"
+            class="overtime-note-chart"
             style="
-                margin-top:40px;
+                margin-top:50px;
                 width:100%;
             "
         >
 
-
             <h3>
-
-                Grafik Keterangan Summary Overtime
-
+                Persentase Overtime Berdasarkan Keterangan
             </h3>
+
+
+            <div
+                class="summary-box"
+                id="noteChartPeriod"
+                style="
+                    margin-bottom:20px;
+                "
+            ></div>
 
 
             <div
                 style="
                     position:relative;
                     width:100%;
-                    height:450px;
-                    max-width:800px;
+                    max-width:700px;
+                    height:500px;
                     margin:0 auto;
                 "
             >
 
-
                 <canvas
-                    id="overtimePieChart"
+                    id="overtimeNoteChart"
                 ></canvas>
-
 
             </div>
 
 
+            <!-- =================================================
+                 TABEL KETERANGAN
+                 ================================================= -->
+
+            <div
+                class="table-wrap"
+                style="
+                    margin-top:30px;
+                "
+            >
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>No</th>
+
+                            <th>Keterangan</th>
+
+                            <th>Jumlah Data</th>
+
+                            <th>Persentase</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="noteSummaryRows">
+
+                        <tr>
+
+                            <td
+                                colspan="4"
+                                class="empty"
+                            >
+
+                                Memuat data...
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+
+                    <tfoot>
+
+                        <tr>
+
+                            <th
+                                colspan="2"
+                                style="text-align:right"
+                            >
+
+                                TOTAL
+
+                            </th>
+
+                            <th id="noteTotal">
+
+                                0
+
+                            </th>
+
+                            <th id="notePercentageTotal">
+
+                                100%
+
+                            </th>
+
+                        </tr>
+
+                    </tfoot>
+
+                </table>
+
+            </div>
+
         </div>
 
-
     </div>
-
 
 </main>
 
@@ -446,7 +444,6 @@
     type="module"
     src="js/summary-overtime.js">
 </script>
-
 
 </body>
 
