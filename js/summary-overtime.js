@@ -22,7 +22,9 @@ import {
 // SESSION
 // =====================================================
 
-const session = requireLogin();
+const session =
+    requireLogin();
+
 
 if (!session) {
 
@@ -34,8 +36,9 @@ if (!session) {
 
 
 if (
-    String(session.role || "").toLowerCase() !==
-    "admin"
+    String(
+        session.role || ""
+    ).toLowerCase() !== "admin"
 ) {
 
     window.location.href =
@@ -55,41 +58,69 @@ if (
 const fromInput =
     document.getElementById("from");
 
+
 const toInput =
     document.getElementById("to");
+
 
 const filterBtn =
     document.getElementById("filterBtn");
 
+
 const resetBtn =
     document.getElementById("resetBtn");
+
 
 const excelBtn =
     document.getElementById("excelBtn");
 
+
 const pdfBtn =
     document.getElementById("pdfBtn");
+
 
 const rows =
     document.getElementById("rows");
 
+
 const userCount =
     document.getElementById("userCount");
+
 
 const grandTotal =
     document.getElementById("grandTotal");
 
+
 const grandConversion =
     document.getElementById("grandConversion");
+
 
 const tableGrandTotal =
     document.getElementById("tableGrandTotal");
 
+
+const tableGrandConversion =
+    document.getElementById(
+        "tableGrandConversion"
+    );
+
+
 const periodLabel =
-    document.getElementById("periodLabel");
+    document.getElementById(
+        "periodLabel"
+    );
+
 
 const overtimeChartCanvas =
-    document.getElementById("overtimeChart");
+    document.getElementById(
+        "overtimeChart"
+    );
+
+
+const overtimePieChartCanvas =
+    document.getElementById(
+        "overtimePieChart"
+    );
 
 
 // =====================================================
@@ -101,6 +132,8 @@ let users = {};
 let overtime = [];
 
 let overtimeChart = null;
+
+let overtimePieChart = null;
 
 
 // =====================================================
@@ -116,6 +149,7 @@ function setDefaultPeriod() {
 
     }
 
+
     if (toInput) {
 
         toInput.value =
@@ -125,6 +159,7 @@ function setDefaultPeriod() {
 
 }
 
+
 setDefaultPeriod();
 
 
@@ -132,7 +167,9 @@ setDefaultPeriod();
 // KONVERSI DATA LAMA
 // =====================================================
 
-function calculateConversionHours(value) {
+function calculateConversionHours(
+    value
+) {
 
     const total =
         Number(value) || 0;
@@ -176,7 +213,9 @@ function calculateConversionHours(value) {
 // AMBIL KONVERSI DARI RINCIAN
 // =====================================================
 
-function getConversionHours(item) {
+function getConversionHours(
+    item
+) {
 
     if (!item) {
 
@@ -222,6 +261,7 @@ function getConversionHours(item) {
 async function loadData() {
 
     try {
+
 
         // =================================================
         // USERS
@@ -275,7 +315,9 @@ async function loadData() {
                 Object.entries(
                     data
                 ).map(
-                    ([id, value]) => ({
+                    (
+                        [id, value]
+                    ) => ({
 
                         id,
 
@@ -305,7 +347,9 @@ async function loadData() {
 
         render();
 
+
     } catch (error) {
+
 
         console.error(
             "ERROR SUMMARY:",
@@ -351,7 +395,9 @@ async function loadData() {
 // NORMALISASI TANGGAL
 // =====================================================
 
-function normalizeDate(value) {
+function normalizeDate(
+    value
+) {
 
     if (!value) {
 
@@ -506,7 +552,7 @@ function normalizeDate(value) {
 
 
 // =====================================================
-// GET SUMMARY
+// GET SUMMARY USER
 // =====================================================
 
 function getSummary() {
@@ -545,7 +591,10 @@ function getSummary() {
     Object.entries(
         users
     ).forEach(
-        ([sapId, user]) => {
+        (
+            [sapId, user]
+        ) => {
+
 
             if (
                 String(
@@ -597,6 +646,7 @@ function getSummary() {
 
     overtime.forEach(
         item => {
+
 
             const date =
                 normalizeDate(
@@ -696,7 +746,10 @@ function getSummary() {
     return Object.values(
         summary
     ).sort(
-        (a, b) =>
+        (
+            a,
+            b
+        ) =>
             String(
                 a.name
             ).localeCompare(
@@ -710,10 +763,76 @@ function getSummary() {
 
 
 // =====================================================
+// GET OVERTIME SESUAI FILTER
+// KHUSUS UNTUK PIE CHART KETERANGAN
+// =====================================================
+
+function getFilteredOvertime() {
+
+    const from =
+        normalizeDate(
+            fromInput?.value || ""
+        );
+
+
+    const to =
+        normalizeDate(
+            toInput?.value || ""
+        );
+
+
+    return overtime.filter(
+        item => {
+
+
+            const date =
+                normalizeDate(
+                    item?.date
+                );
+
+
+            if (!date) {
+
+                return false;
+
+            }
+
+
+            if (
+                from &&
+                date < from
+            ) {
+
+                return false;
+
+            }
+
+
+            if (
+                to &&
+                date > to
+            ) {
+
+                return false;
+
+            }
+
+
+            return true;
+
+        }
+    );
+
+}
+
+
+// =====================================================
 // FORMAT ANGKA
 // =====================================================
 
-function formatNumber(value) {
+function formatNumber(
+    value
+) {
 
     const number =
         Number(
@@ -743,7 +862,9 @@ function formatNumber(value) {
 // FORMAT TANGGAL
 // =====================================================
 
-function formatDate(value) {
+function formatDate(
+    value
+) {
 
     if (!value) {
 
@@ -781,10 +902,12 @@ function formatDate(value) {
 
 
 // =====================================================
-// RENDER GRAFIK
+// GRAFIK BATANG
 // =====================================================
 
-function renderChart(data) {
+function renderChart(
+    data
+) {
 
     if (
         !overtimeChartCanvas
@@ -1005,7 +1128,9 @@ function renderChart(data) {
                             },
 
                             formatter:
-                                function(value) {
+                                function(
+                                    value
+                                ) {
 
                                     return formatNumber(
                                         value
@@ -1083,7 +1208,399 @@ function renderChart(data) {
 
 
 // =====================================================
-// AMBIL GAMBAR GRAFIK
+// GRAFIK LINGKARAN
+// BERDASARKAN KETERANGAN / NOTE
+// =====================================================
+
+function renderPieChart(
+    data
+) {
+
+    if (
+        !overtimePieChartCanvas
+    ) {
+
+        console.warn(
+            "Canvas #overtimePieChart tidak ditemukan."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        typeof Chart ===
+        "undefined"
+    ) {
+
+        console.error(
+            "Chart.js belum dimuat."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        typeof ChartDataLabels ===
+        "undefined"
+    ) {
+
+        console.error(
+            "ChartDataLabels belum dimuat."
+        );
+
+        return;
+
+    }
+
+
+    // =================================================
+    // HAPUS GRAFIK LAMA
+    // =================================================
+
+    if (
+        overtimePieChart
+    ) {
+
+        overtimePieChart.destroy();
+
+        overtimePieChart =
+            null;
+
+    }
+
+
+    // =================================================
+    // SUMMARY KETERANGAN
+    // =================================================
+
+    const noteSummary = {};
+
+
+    data.forEach(
+        item => {
+
+
+            let note =
+                String(
+                    item?.note || ""
+                ).trim();
+
+
+            // =================================================
+            // KETERANGAN KOSONG
+            // =================================================
+
+            if (!note) {
+
+                note =
+                    "Tanpa Keterangan";
+
+            }
+
+
+            if (
+                !noteSummary[note]
+            ) {
+
+                noteSummary[note] =
+                    0;
+
+            }
+
+
+            noteSummary[note] +=
+                1;
+
+        }
+    );
+
+
+    // =================================================
+    // LABEL
+    // =================================================
+
+    const labels =
+        Object.keys(
+            noteSummary
+        );
+
+
+    // =================================================
+    // JUMLAH DATA
+    // =================================================
+
+    const values =
+        Object.values(
+            noteSummary
+        );
+
+
+    // =================================================
+    // JIKA TIDAK ADA DATA
+    // =================================================
+
+    if (
+        labels.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    // =================================================
+    // TOTAL DATA
+    // =================================================
+
+    const total =
+        values.reduce(
+            (
+                sum,
+                value
+            ) =>
+                sum + value,
+            0
+        );
+
+
+    // =================================================
+    // WARNA
+    // =================================================
+
+    const colors = [
+
+        "#36A2EB",
+
+        "#FF6384",
+
+        "#FFCE56",
+
+        "#4BC0C0",
+
+        "#9966FF",
+
+        "#FF9F40",
+
+        "#8BC34A",
+
+        "#E91E63",
+
+        "#00ACC1",
+
+        "#795548",
+
+        "#607D8B",
+
+        "#9C27B0",
+
+        "#03A9F4",
+
+        "#CDDC39",
+
+        "#FF5722",
+
+        "#795548",
+
+        "#009688",
+
+        "#673AB7",
+
+        "#F44336",
+
+        "#2196F3"
+
+    ];
+
+
+    // =================================================
+    // BUAT PIE CHART
+    // =================================================
+
+    overtimePieChart =
+        new Chart(
+            overtimePieChartCanvas,
+            {
+
+                type:
+                    "pie",
+
+
+                plugins: [
+
+                    ChartDataLabels
+
+                ],
+
+
+                data: {
+
+                    labels:
+                        labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "Keterangan Overtime",
+
+                            data:
+                                values,
+
+                            backgroundColor:
+                                labels.map(
+                                    (
+                                        label,
+                                        index
+                                    ) =>
+                                        colors[
+                                            index %
+                                            colors.length
+                                        ]
+                                ),
+
+                            borderColor:
+                                "#ffffff",
+
+                            borderWidth:
+                                2
+
+                        }
+
+                    ]
+
+                },
+
+
+                options: {
+
+                    responsive:
+                        true,
+
+                    maintainAspectRatio:
+                        false,
+
+                    animation:
+                        false,
+
+
+                    plugins: {
+
+
+                        // =============================================
+                        // JUDUL
+                        // =============================================
+
+                        title: {
+
+                            display:
+                                true,
+
+                            text:
+                                "Persentase Keterangan Overtime"
+
+                        },
+
+
+                        // =============================================
+                        // LEGEND
+                        // =============================================
+
+                        legend: {
+
+                            display:
+                                true,
+
+                            position:
+                                "right",
+
+                            labels: {
+
+                                padding:
+                                    15,
+
+                                boxWidth:
+                                    18
+
+                            }
+
+                        },
+
+
+                        // =============================================
+                        // LABEL PERSENTASE
+                        // =============================================
+
+                        datalabels: {
+
+                            display:
+                                true,
+
+                            color:
+                                "#ffffff",
+
+                            font: {
+
+                                weight:
+                                    "bold",
+
+                                size:
+                                    13
+
+                            },
+
+
+                            formatter:
+                                function(
+                                    value
+                                ) {
+
+
+                                    if (
+                                        total <=
+                                        0
+                                    ) {
+
+                                        return "";
+
+                                    }
+
+
+                                    const percentage =
+                                        (
+                                            value /
+                                            total
+                                        ) *
+                                        100;
+
+
+                                    return (
+                                        percentage.toFixed(
+                                            2
+                                        ) +
+                                        "%"
+                                    );
+
+                                }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+}
+
+
+// =====================================================
+// AMBIL GAMBAR GRAFIK BATANG
 // =====================================================
 
 function getChartImage() {
@@ -1131,8 +1648,21 @@ function render() {
     }
 
 
+    // =================================================
+    // SUMMARY USER
+    // =================================================
+
     const data =
         getSummary();
+
+
+    // =================================================
+    // DATA OVERTIME SESUAI FILTER
+    // UNTUK PIE CHART
+    // =================================================
+
+    const filteredOvertime =
+        getFilteredOvertime();
 
 
     // =================================================
@@ -1318,15 +1848,9 @@ function render() {
     }
 
 
-    const conversionFooter =
-        document.getElementById(
-            "tableGrandConversion"
-        );
+    if (tableGrandConversion) {
 
-
-    if (conversionFooter) {
-
-        conversionFooter.textContent =
+        tableGrandConversion.textContent =
             formatNumber(
                 totalConversion
             );
@@ -1335,11 +1859,21 @@ function render() {
 
 
     // =================================================
-    // GRAFIK
+    // GRAFIK BATANG
     // =================================================
 
     renderChart(
         data
+    );
+
+
+    // =================================================
+    // GRAFIK LINGKARAN
+    // BERDASARKAN NOTE
+    // =================================================
+
+    renderPieChart(
+        filteredOvertime
     );
 
 }
@@ -1392,6 +1926,7 @@ if (excelBtn) {
     excelBtn.addEventListener(
         "click",
         async function () {
+
 
             if (
                 typeof ExcelJS ===
@@ -1643,21 +2178,25 @@ if (excelBtn) {
             worksheet.getColumn(1).width =
                 8;
 
+
             worksheet.getColumn(2).width =
                 18;
+
 
             worksheet.getColumn(3).width =
                 30;
 
+
             worksheet.getColumn(4).width =
                 18;
+
 
             worksheet.getColumn(5).width =
                 22;
 
 
             // =================================================
-            // GRAFIK EXCEL
+            // GRAFIK BATANG EXCEL
             // =================================================
 
             const chartImage =
@@ -1667,6 +2206,7 @@ if (excelBtn) {
             if (
                 chartImage
             ) {
+
 
                 const imageId =
                     workbook.addImage({
@@ -1739,7 +2279,7 @@ if (excelBtn) {
 
 
             // =================================================
-            // DOWNLOAD EXCEL
+            // DOWNLOAD
             // =================================================
 
             const buffer =
@@ -1822,6 +2362,7 @@ if (pdfBtn) {
     pdfBtn.addEventListener(
         "click",
         function () {
+
 
             if (
                 !window.jspdf ||
@@ -1960,7 +2501,7 @@ if (pdfBtn) {
 
 
             // =================================================
-            // TABEL
+            // AUTOTABLE
             // =================================================
 
             if (
@@ -2164,7 +2705,7 @@ if (pdfBtn) {
 
 
             // =================================================
-            // GRAFIK
+            // GRAFIK BATANG
             // =================================================
 
             const chartImage =
@@ -2174,6 +2715,7 @@ if (pdfBtn) {
             if (
                 chartImage
             ) {
+
 
                 let chartY =
                     doc.lastAutoTable.finalY +
@@ -2195,10 +2737,6 @@ if (pdfBtn) {
                     bottomMargin;
 
 
-                // =================================================
-                // PAKSA TETAP DALAM 1 PAGE
-                // =================================================
-
                 if (
                     chartHeight >
                     65
@@ -2210,14 +2748,11 @@ if (pdfBtn) {
                 }
 
 
-                // =================================================
-                // JIKA MASIH ADA RUANG
-                // =================================================
-
                 if (
                     chartHeight >
                     25
                 ) {
+
 
                     doc.setFont(
                         "helvetica",
