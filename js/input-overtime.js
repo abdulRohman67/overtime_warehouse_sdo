@@ -31,11 +31,13 @@ if (
     !s ||
     String(s.role || "").toLowerCase() !== "admin"
 ) {
+
     location.href = "dashboard.html";
 
     throw new Error(
         "Akses hanya untuk administrator."
     );
+
 }
 
 
@@ -51,17 +53,6 @@ let users = {};
 /* =====================================================
    MODE FORM
 ===================================================== */
-
-/*
-    false = INPUT BARU
-    true  = EDIT
-
-    INPUT BARU:
-    Jam dan konversi otomatis.
-
-    EDIT:
-    Jam dan konversi manual.
-*/
 
 let isEditMode = false;
 
@@ -187,18 +178,6 @@ const overtimeCategory = {
    NORMALISASI ANGKA
 ===================================================== */
 
-/*
- * Penting:
- *
- * Fungsi ini memastikan:
- *
- * "0.5"  -> 0.5
- * "0,5"  -> 0.5
- * 0.5    -> 0.5
- *
- * Supaya perhitungan 0.5 tidak gagal.
- */
-
 function normalizeNumber(value) {
 
     if (
@@ -206,7 +185,9 @@ function normalizeNumber(value) {
         value === undefined ||
         value === ""
     ) {
+
         return 0;
+
     }
 
 
@@ -221,19 +202,62 @@ function normalizeNumber(value) {
     }
 
 
-    const normalized =
+    let text =
         String(value)
-            .trim()
-            .replace(",", ".");
+            .trim();
+
+
+    /*
+     * Dukungan angka Indonesia:
+     *
+     * 0,5
+     * 1,5
+     * 2,5
+     */
+
+    text =
+        text.replace(",", ".");
 
 
     const number =
-        Number(normalized);
+        Number(text);
 
 
     return Number.isFinite(number)
         ? number
         : 0;
+
+}
+
+
+/* =====================================================
+   CEK ANGKA VALID
+===================================================== */
+
+function isValidNumber(value) {
+
+    return (
+        typeof value === "number" &&
+        Number.isFinite(value)
+    );
+
+}
+
+
+/* =====================================================
+   BANDINGKAN ANGKA
+===================================================== */
+
+function sameNumber(
+    a,
+    b
+) {
+
+    return (
+        Math.abs(
+            Number(a) - Number(b)
+        ) < 0.000001
+    );
 
 }
 
@@ -253,7 +277,10 @@ function calculateHours(value) {
      */
 
     if (
-        total === 4
+        sameNumber(
+            total,
+            4
+        )
     ) {
 
         return 3.5;
@@ -266,7 +293,10 @@ function calculateHours(value) {
      */
 
     if (
-        total === 11
+        sameNumber(
+            total,
+            11
+        )
     ) {
 
         return 10.5;
@@ -275,12 +305,12 @@ function calculateHours(value) {
 
 
     /*
-     * Semua jam lainnya
-     * dikembalikan apa adanya.
-     *
-     * Termasuk:
+     * Contoh:
      *
      * 0.5 -> 0.5
+     * 1   -> 1
+     * 1.5 -> 1.5
+     * 2   -> 2
      */
 
     return total;
@@ -299,63 +329,143 @@ function calculateConversionHours(value) {
 
 
     /*
-     * PENTING:
+     * ATURAN KONVERSI
      *
-     * Gunakan Number.isFinite
-     * dan perbandingan numerik.
-     *
-     * 0.5 HARUS menghasilkan 0.75.
+     * 0.5 -> 0.75
+     * 1   -> 1.5
+     * 1.5 -> 2.5
+     * 2   -> 3.5
+     * 3   -> 5.5
+     * 3.5 -> 6.5
+     * 4   -> 7.5
+     * 5   -> 9.5
+     * 6   -> 11.5
+     * 7   -> 14
+     * 8   -> 17
      */
 
-    const conversion = {
+    const conversionRules = [
 
-        0.5: 0.75,
+        {
+            hours: 0.5,
+            conversion: 0.75
+        },
 
-        1: 1.5,
+        {
+            hours: 1,
+            conversion: 1.5
+        },
 
-        1.5: 2.5,
+        {
+            hours: 1.5,
+            conversion: 2.5
+        },
 
-        2: 3.5,
+        {
+            hours: 2,
+            conversion: 3.5
+        },
 
-        3: 5.5,
+        {
+            hours: 3,
+            conversion: 5.5
+        },
 
-        3.5: 6.5,
+        {
+            hours: 3.5,
+            conversion: 6.5
+        },
 
-        4: 7.5,
+        {
+            hours: 4,
+            conversion: 7.5
+        },
 
-        5: 9.5,
+        {
+            hours: 5,
+            conversion: 9.5
+        },
 
-        6: 11.5,
+        {
+            hours: 6,
+            conversion: 11.5
+        },
 
-        7: 14,
+        {
+            hours: 7,
+            conversion: 14
+        },
 
-        8: 17
+        {
+            hours: 8,
+            conversion: 17
+        }
 
-    };
+    ];
 
 
-    /*
-     * Cari berdasarkan nilai numerik.
-     */
+    const found =
+        conversionRules.find(
+            rule =>
+                sameNumber(
+                    rule.hours,
+                    total
+                )
+        );
 
-    if (
-        Object.prototype.hasOwnProperty.call(
-            conversion,
-            total
-        )
-    ) {
 
-        return conversion[total];
+    if (found) {
+
+        return found.conversion;
 
     }
 
 
     /*
-     * Jika tidak ada aturan khusus,
-     * kembalikan nilai jam tersebut.
+     * Jika tidak ada aturan,
+     * kembalikan nilai jam.
      */
 
     return total;
+
+}
+
+
+/* =====================================================
+   HITUNG DATA JAM + KONVERSI
+===================================================== */
+
+function calculateOvertimeValues(
+    value
+) {
+
+    const rawHours =
+        normalizeNumber(
+            value
+        );
+
+
+    const finalHours =
+        calculateHours(
+            rawHours
+        );
+
+
+    const finalConversion =
+        calculateConversionHours(
+            finalHours
+        );
+
+
+    return {
+
+        hours:
+            finalHours,
+
+        conversionHours:
+            finalConversion
+
+    };
 
 }
 
@@ -366,47 +476,22 @@ function calculateConversionHours(value) {
 
 function getConversionHours(x) {
 
-    /*
-     * Jika database sudah memiliki conversionHours,
-     * gunakan nilai tersebut.
-     */
-
-    if (
-        x &&
-        x.conversionHours !== undefined &&
-        x.conversionHours !== null &&
-        x.conversionHours !== ""
-    ) {
-
-        const value =
-            normalizeNumber(
-                x.conversionHours
-            );
-
-
-        if (
-            Number.isFinite(value)
-        ) {
-
-            return value;
-
-        }
-
-    }
+    const databaseHours =
+        normalizeNumber(
+            x?.hours
+        );
 
 
     /*
-     * Jika database belum memiliki conversionHours,
-     * hitung otomatis berdasarkan hours.
+     * Selalu hitung berdasarkan hours.
      *
-     * Contoh:
-     *
-     * hours = 0.5
-     * conversion = 0.75
+     * Dengan cara ini data lama yang memiliki
+     * conversionHours salah juga ikut diperbaiki
+     * saat ditampilkan.
      */
 
     return calculateConversionHours(
-        x?.hours || 0
+        databaseHours
     );
 
 }
@@ -489,43 +574,40 @@ if (category) {
 
 
             /*
-             * EDIT:
-             *
-             * Jangan mengubah jam dan konversi
-             * manual yang sudah ada.
+             * Kategori tidak mengubah data
+             * saat edit.
              */
 
             if (isEditMode) {
+
                 return;
+
             }
 
 
-            /*
-             * INPUT BARU:
-             *
-             * Semua otomatis.
-             */
-
             start.value =
                 x.start;
+
 
             end.value =
                 x.end;
 
 
-            const calculatedHours =
-                calculateHours(
+            const result =
+                calculateOvertimeValues(
                     x.hours
                 );
 
 
             hours.value =
-                calculatedHours;
+                formatNumber(
+                    result.hours
+                );
 
 
             conversionHours.value =
-                calculateConversionHours(
-                    calculatedHours
+                formatNumber(
+                    result.conversionHours
                 );
 
         }
@@ -545,23 +627,25 @@ if (hours) {
         () => {
 
             /*
-             * EDIT:
-             *
-             * User bebas menentukan
-             * konversi manual.
+             * Jika kosong,
+             * konversi ikut dikosongkan.
              */
 
-            if (isEditMode) {
+            if (
+                hours.value === ""
+            ) {
+
+                if (conversionHours) {
+
+                    conversionHours.value =
+                        "";
+
+                }
+
                 return;
+
             }
 
-
-            /*
-             * INPUT BARU:
-             *
-             * Setiap perubahan jam,
-             * konversi dihitung otomatis.
-             */
 
             const inputHours =
                 normalizeNumber(
@@ -569,20 +653,80 @@ if (hours) {
                 );
 
 
-            const totalHours =
-                calculateHours(
+            /*
+             * Jika bukan angka valid,
+             * jangan menampilkan error.
+             *
+             * Tunggu sampai user selesai mengetik.
+             */
+
+            if (
+                !isValidNumber(
+                    inputHours
+                )
+            ) {
+
+                if (conversionHours) {
+
+                    conversionHours.value =
+                        "";
+
+                }
+
+                return;
+
+            }
+
+
+            /*
+             * INPUT BARU DAN EDIT:
+             *
+             * Keduanya menggunakan aturan
+             * konversi otomatis.
+             */
+
+            const result =
+                calculateOvertimeValues(
                     inputHours
                 );
 
 
-            const totalConversion =
-                calculateConversionHours(
-                    totalHours
-                );
+            /*
+             * Update hours juga.
+             *
+             * Contoh:
+             *
+             * input 4
+             * menjadi 3.5
+             */
+
+            if (
+                sameNumber(
+                    inputHours,
+                    4
+                )
+            ) {
+
+                hours.value =
+                    formatNumber(
+                        result.hours
+                    );
+
+            }
 
 
-            conversionHours.value =
-                totalConversion;
+            /*
+             * 0.5 -> 0.75
+             */
+
+            if (conversionHours) {
+
+                conversionHours.value =
+                    formatNumber(
+                        result.conversionHours
+                    );
+
+            }
 
         }
     );
@@ -601,11 +745,35 @@ if (conversionHours) {
         () => {
 
             /*
-             * Tidak melakukan kalkulasi otomatis.
+             * Konversi tidak menjadi sumber
+             * perhitungan.
              *
-             * Nilai konversi bisa diubah manual
-             * terutama ketika EDIT.
+             * Nilai akan selalu mengikuti
+             * jumlah jam.
              */
+
+            const inputHours =
+                normalizeNumber(
+                    hours?.value
+                );
+
+
+            if (
+                inputHours > 0
+            ) {
+
+                const result =
+                    calculateOvertimeValues(
+                        inputHours
+                    );
+
+
+                conversionHours.value =
+                    formatNumber(
+                        result.conversionHours
+                    );
+
+            }
 
         }
     );
@@ -826,6 +994,17 @@ function render() {
                         getConversionHours(x);
 
 
+                    /*
+                     * Jam yang ditampilkan juga
+                     * mengikuti aturan sistem.
+                     */
+
+                    const displayHours =
+                        calculateHours(
+                            x?.hours || 0
+                        );
+
+
                     return `
 
                         <tr>
@@ -884,7 +1063,7 @@ function render() {
 
                             <td>
                                 ${formatNumber(
-                                    x?.hours || 0
+                                    displayHours
                                 )}
                             </td>
 
@@ -1154,29 +1333,24 @@ if (otForm) {
 
 
             /*
-             * Ambil nilai input.
-             *
-             * normalizeNumber() membuat
-             * 0,5 menjadi 0.5.
+             * Ambil jam dari input.
              */
 
-            let inputHours =
+            const rawHours =
                 normalizeNumber(
                     hours?.value
                 );
 
 
-            let inputConversion =
-                normalizeNumber(
-                    conversionHours?.value
-                );
-
+            /*
+             * Validasi jam.
+             */
 
             if (
-                !Number.isFinite(
-                    inputHours
+                !isValidNumber(
+                    rawHours
                 ) ||
-                inputHours <= 0
+                rawHours <= 0
             ) {
 
                 alert(
@@ -1188,53 +1362,51 @@ if (otForm) {
             }
 
 
-            /* =========================================
-               INPUT BARU
-            ========================================== */
+            /*
+             * SELALU hitung ulang jam dan konversi.
+             *
+             * Tidak peduli INPUT BARU atau EDIT.
+             */
 
-            if (!isEditMode) {
-
-                inputHours =
-                    calculateHours(
-                        inputHours
-                    );
+            const overtime =
+                calculateOvertimeValues(
+                    rawHours
+                );
 
 
-                /*
-                 * Konversi SELALU dihitung ulang
-                 * berdasarkan jumlah jam.
-                 *
-                 * Jadi:
-                 *
-                 * 0.5 -> 0.75
-                 */
+            const inputHours =
+                overtime.hours;
 
-                inputConversion =
-                    calculateConversionHours(
-                        inputHours
-                    );
+
+            const inputConversion =
+                overtime.conversionHours;
+
+
+            /*
+             * VALIDASI FINAL.
+             */
+
+            if (
+                !isValidNumber(
+                    inputHours
+                ) ||
+                inputHours <= 0
+            ) {
+
+                alert(
+                    "Jumlah jam overtime tidak valid."
+                );
+
+                return;
 
             }
 
 
-            /* =========================================
-               EDIT
-            ========================================== */
-
-            /*
-             * Saat edit:
-             *
-             * Jam dan konversi mengikuti input user.
-             *
-             * Tidak dihitung ulang.
-             */
-
-
             if (
-                !Number.isFinite(
+                !isValidNumber(
                     inputConversion
                 ) ||
-                inputConversion < 0
+                inputConversion <= 0
             ) {
 
                 alert(
@@ -1245,6 +1417,10 @@ if (otForm) {
 
             }
 
+
+            /*
+             * Pastikan tanggal ada.
+             */
 
             const finalDate =
                 String(
@@ -1322,7 +1498,7 @@ if (otForm) {
 
 
             /*
-             * SIMPAN
+             * SIMPAN FIREBASE
              */
 
             await set(
@@ -1352,6 +1528,10 @@ if (otForm) {
             }
 
 
+            /*
+             * Kembali ke mode input baru.
+             */
+
             reset();
 
         }
@@ -1370,17 +1550,23 @@ function reset() {
 
 
     if (otForm) {
+
         otForm.reset();
+
     }
 
 
     if (editId) {
+
         editId.value = "";
+
     }
 
 
     if (conversionHours) {
+
         conversionHours.value = "";
+
     }
 
 
@@ -1457,17 +1643,22 @@ function getExcelValue(
         );
 
 
-    for (const name of names) {
+    for (
+        const name of names
+    ) {
 
         const target =
-            normalizeHeader(name);
+            normalizeHeader(
+                name
+            );
 
 
         const found =
             keys.find(
                 key =>
-                    normalizeHeader(key) ===
-                    target
+                    normalizeHeader(
+                        key
+                    ) === target
             );
 
 
@@ -1504,7 +1695,9 @@ function formatExcelDate(value) {
     }
 
 
-    if (typeof value === "string") {
+    if (
+        typeof value === "string"
+    ) {
 
         const stringValue =
             value.trim();
@@ -1548,6 +1741,7 @@ function formatExcelDate(value) {
 
             const shortYear =
                 Number(match[3]);
+
 
             const year =
                 shortYear >= 50
@@ -1638,7 +1832,9 @@ function formatExcelDate(value) {
 
     if (
         value instanceof Date &&
-        !isNaN(value.getTime())
+        !isNaN(
+            value.getTime()
+        )
     ) {
 
         return buildDateString(
@@ -1650,7 +1846,9 @@ function formatExcelDate(value) {
     }
 
 
-    return String(value).trim();
+    return String(
+        value
+    ).trim();
 
 }
 
@@ -1719,10 +1917,15 @@ function formatExcelTime(value) {
         if (match) {
 
             const hour =
-                Number(match[1]);
+                Number(
+                    match[1]
+                );
+
 
             const minute =
-                Number(match[2]);
+                Number(
+                    match[2]
+                );
 
 
             if (
@@ -1770,7 +1973,9 @@ function formatExcelTime(value) {
             (24 * 60);
 
 
-        if (totalMinutes < 0) {
+        if (
+            totalMinutes < 0
+        ) {
 
             totalMinutes +=
                 24 * 60;
@@ -1805,7 +2010,9 @@ function formatExcelTime(value) {
 
     if (
         value instanceof Date &&
-        !isNaN(value.getTime())
+        !isNaN(
+            value.getTime()
+        )
     ) {
 
         return (
@@ -1825,7 +2032,9 @@ function formatExcelTime(value) {
     }
 
 
-    return String(value).trim();
+    return String(
+        value
+    ).trim();
 
 }
 
@@ -1858,11 +2067,30 @@ function parseExcelNumber(value) {
     }
 
 
-    const stringValue =
+    let stringValue =
         String(value)
-            .trim()
-            .replace(",", ".");
+            .trim();
 
+
+    /*
+     * 0,5 -> 0.5
+     */
+
+    stringValue =
+        stringValue.replace(
+            ",",
+            "."
+        );
+
+
+    /*
+     * Angka normal:
+     *
+     * 0.5
+     * 1
+     * 1.5
+     * 2
+     */
 
     const number =
         Number(
@@ -1880,7 +2108,7 @@ function parseExcelNumber(value) {
 
 
     /*
-     * Dukungan format:
+     * Format:
      *
      * 2:30 -> 2.5
      */
@@ -1894,8 +2122,11 @@ function parseExcelNumber(value) {
     if (match) {
 
         return (
+
             Number(match[1]) +
+
             Number(match[2]) / 60
+
         );
 
     }
@@ -2137,18 +2368,6 @@ async function uploadExcel() {
                     );
 
 
-                const rowConversion =
-                    getExcelValue(
-                        row,
-                        [
-                            "Konversi",
-                            "Konversi Jam",
-                            "Conversion",
-                            "ConversionHours"
-                        ]
-                    );
-
-
                 const rowNote =
                     getExcelValue(
                         row,
@@ -2201,7 +2420,9 @@ async function uploadExcel() {
 
                 if (
                     !/^\d{4}-\d{2}-\d{2}$/
-                        .test(finalDate)
+                        .test(
+                            finalDate
+                        )
                 ) {
 
                     throw new Error(
@@ -2279,7 +2500,7 @@ async function uploadExcel() {
 
                 /*
                  * Jika jam kosong,
-                 * gunakan jam default kategori.
+                 * gunakan jam kategori.
                  */
 
                 if (
@@ -2306,101 +2527,46 @@ async function uploadExcel() {
 
 
                 /*
-                 * Hitung jam final.
-                 *
-                 * Contoh:
-                 *
-                 * 4 -> 3.5
-                 * 11 -> 10.5
-                 * 0.5 -> 0.5
+                 * HITUNG JAM FINAL
                  */
 
-                const finalHours =
-                    calculateHours(
+                const overtime =
+                    calculateOvertimeValues(
                         rawHours
                     );
 
 
+                const finalHours =
+                    overtime.hours;
+
+
+                const finalConversion =
+                    overtime.conversionHours;
+
+
                 /*
-                 * =================================================
-                 * KONVERSI EXCEL
-                 * =================================================
-                 *
-                 * Aturan:
-                 *
-                 * Jika kolom Konversi kosong:
-                 * hitung otomatis.
-                 *
-                 * Jika kolom Konversi diisi:
-                 * gunakan nilai manual.
-                 *
-                 * KHUSUS:
-                 *
-                 * Jika Jam = 0.5,
-                 * sistem memastikan konversi = 0.75
-                 * apabila kolom konversi kosong/tidak valid.
+                 * PENGAMAN KHUSUS 0.5
                  */
 
-                let finalConversion;
-
-
-                const hasExcelConversion =
-                    rowConversion !== "" &&
-                    rowConversion !== null &&
-                    rowConversion !== undefined;
-
-
                 if (
-                    hasExcelConversion
+                    sameNumber(
+                        finalHours,
+                        0.5
+                    )
                 ) {
-
-                    const excelConversion =
-                        parseExcelNumber(
-                            rowConversion
-                        );
-
 
                     if (
-                        excelConversion > 0
+                        !sameNumber(
+                            finalConversion,
+                            0.75
+                        )
                     ) {
 
-                        finalConversion =
-                            excelConversion;
-
-                    } else {
-
-                        finalConversion =
-                            calculateConversionHours(
-                                finalHours
-                            );
-
-                    }
-
-                } else {
-
-                    finalConversion =
-                        calculateConversionHours(
-                            finalHours
+                        throw new Error(
+                            "Konversi 0.5 jam harus 0.75"
                         );
 
-                }
-
-
-                /*
-                 * PENGAMAN:
-                 *
-                 * 0.5 jam WAJIB 0.75.
-                 *
-                 * Ini memastikan tidak ada
-                 * masalah pembacaan angka Excel.
-                 */
-
-                if (
-                    finalHours === 0.5
-                ) {
-
-                    finalConversion =
-                        0.75;
+                    }
 
                 }
 
@@ -2501,7 +2667,10 @@ async function uploadExcel() {
 
 
         if (excelFile) {
-            excelFile.value = "";
+
+            excelFile.value =
+                "";
+
         }
 
 
@@ -2578,13 +2747,33 @@ function downloadExcelTemplate() {
 
         worksheet["!cols"] = [
 
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 15 },
-            { wch: 12 },
-            { wch: 12 },
-            { wch: 10 },
-            { wch: 30 }
+            {
+                wch: 15
+            },
+
+            {
+                wch: 15
+            },
+
+            {
+                wch: 15
+            },
+
+            {
+                wch: 12
+            },
+
+            {
+                wch: 12
+            },
+
+            {
+                wch: 10
+            },
+
+            {
+                wch: 30
+            }
 
         ];
 
@@ -2635,7 +2824,7 @@ function downloadExcelTemplate() {
             {
                 "Kolom": "Jam",
                 "Keterangan":
-                    "Boleh dikosongkan, otomatis mengikuti kategori"
+                    "Masukkan jumlah jam, contoh 0.5 atau 0,5"
             },
 
             {
@@ -2645,15 +2834,15 @@ function downloadExcelTemplate() {
             },
 
             {
-                "Kolom": "Aturan",
+                "Kolom": "Konversi",
                 "Keterangan":
-                    "0.5 jam menjadi 0.75 konversi; 4 jam menjadi 3.5 jam; 11 jam menjadi 10.5 jam"
+                    "Dihitung otomatis berdasarkan jumlah jam"
             },
 
             {
-                "Kolom": "Konversi",
+                "Kolom": "Aturan",
                 "Keterangan":
-                    "Tidak perlu diisi, sistem menghitung otomatis"
+                    "0.5 jam = 0.75; 1 jam = 1.5; 1.5 jam = 2.5; 2 jam = 3.5; 3 jam = 5.5; 3.5 jam = 6.5; 4 jam = 7.5; 5 jam = 9.5; 6 jam = 11.5; 7 jam = 14; 8 jam = 17"
             }
 
         ];
@@ -2667,8 +2856,13 @@ function downloadExcelTemplate() {
 
         instructionSheet["!cols"] = [
 
-            { wch: 20 },
-            { wch: 80 }
+            {
+                wch: 20
+            },
+
+            {
+                wch: 100
+            }
 
         ];
 
@@ -2908,102 +3102,119 @@ if (rows) {
                  * AKTIFKAN MODE EDIT
                  */
 
-                isEditMode = true;
+                isEditMode =
+                    true;
 
 
                 updateFormMode();
 
 
                 if (editId) {
-                    editId.value = ed;
+
+                    editId.value =
+                        ed;
+
                 }
 
 
                 if (date) {
+
                     date.value =
                         x?.date || "";
+
                 }
 
 
                 if (userSap) {
+
                     userSap.value =
                         x?.userSap || "";
+
                 }
 
 
                 if (category) {
+
                     category.value =
                         x?.category || "";
+
                 }
 
 
                 if (start) {
+
                     start.value =
                         x?.start || "";
+
                 }
 
 
                 if (end) {
+
                     end.value =
                         x?.end || "";
+
                 }
 
 
                 /*
-                 * Ambil hours dari database
-                 * apa adanya.
+                 * Ambil hours dari database.
                  */
+
+                const existingHours =
+                    normalizeNumber(
+                        x?.hours
+                    );
+
 
                 if (hours) {
 
                     hours.value =
-                        x?.hours !== undefined &&
-                        x?.hours !== null
-                            ? x.hours
-                            : "";
+                        formatNumber(
+                            existingHours
+                        );
 
                 }
 
 
                 /*
-                 * Ambil conversion dari database.
+                 * Jangan mengambil conversionHours
+                 * lama jika nilainya tidak sesuai.
                  *
-                 * Jika data lama tidak memiliki
-                 * conversionHours, hitung otomatis.
+                 * Hitung ulang dari hours.
                  */
+
+                const calculated =
+                    calculateOvertimeValues(
+                        existingHours
+                    );
+
+
+                if (hours) {
+
+                    hours.value =
+                        formatNumber(
+                            calculated.hours
+                        );
+
+                }
+
 
                 if (conversionHours) {
 
-                    if (
-                        x?.conversionHours !== undefined &&
-                        x?.conversionHours !== null &&
-                        x?.conversionHours !== ""
-                    ) {
-
-                        conversionHours.value =
-                            x.conversionHours;
-
-                    } else {
-
-                        const editHours =
-                            normalizeNumber(
-                                x?.hours
-                            );
-
-
-                        conversionHours.value =
-                            calculateConversionHours(
-                                editHours
-                            );
-
-                    }
+                    conversionHours.value =
+                        formatNumber(
+                            calculated.conversionHours
+                        );
 
                 }
 
 
                 if (note) {
+
                     note.value =
                         x?.note || "";
+
                 }
 
 
