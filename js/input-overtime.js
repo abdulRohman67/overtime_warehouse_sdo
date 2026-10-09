@@ -237,6 +237,8 @@ function calculateConversionHours(value) {
 
         5: 9.5,
 
+        5.5: 10.5,
+
         6: 11.5,
 
         7: 14,
