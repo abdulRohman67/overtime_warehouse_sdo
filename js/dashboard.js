@@ -1,4 +1,3 @@
-```javascript
 import { db } from "./firebase.js";
 import {
     ref,
@@ -70,4 +69,4 @@ async function loadDashboard() {
 }
 
 loadDashboard();
-```
+
