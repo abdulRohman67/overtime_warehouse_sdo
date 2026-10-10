@@ -74,19 +74,19 @@ async function loadDashboard() {
                         line-height: 1.8;
                     ">
                         <div>
-                            1. OT Agustus - September yaitu 11 Agustus s/d 9 September
+                            1. OT Agustus - September yaitu 11 Agustus 20296 s/d 9 September 2026
                         </div>
 
                         <div style="padding-left: 20px;">
-                            OT Tanggal 09 September Masuk OT Manual
+                            OT Tanggal 09 September 2026 Masuk OT Manual
                         </div>
 
                         <div style="margin-top: 8px;">
-                            2. OT September - Oktober yaitu 10 September s/d 11 Oktober
+                            2. OT September - Oktober yaitu 10 September 2026 s/d 11 Oktober 2026
                         </div>
 
                         <div style="padding-left: 20px;">
-                            OT Tanggal 9,10,11 Oktober Masuk OT Manual
+                            OT Tanggal 9,10,11 Oktober 2026 Masuk OT Manual
                         </div>
                     </div>
                 `;
