@@ -59,7 +59,7 @@ async function loadDashboard() {
                 ${
                     s.role === "admin"
                         ? "Anda memiliki akses penuh untuk mengelola akun dan overtime."
-                        : "Anda hanya dapat melihat data overtime milik Anda."
+                        : "Untuk OT Tgl 9, 10 , 11 Oktober Masuk OT Manual."
                 }
             `;
         }
