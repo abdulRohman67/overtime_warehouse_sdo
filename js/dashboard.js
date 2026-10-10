@@ -52,7 +52,6 @@ async function loadDashboard() {
         }
 
         // Pesan selamat datang
-      const welcome = document.getElementById("welcome");
 const welcome = document.getElementById("welcome");
 
 if (welcome) {
@@ -61,26 +60,11 @@ if (welcome) {
         ${
             s.role === "admin"
                 ? "Anda memiliki akses penuh untuk mengelola akun dan overtime."
-                : `
-                    <div style="color: red; margin-top: 10px; line-height: 1.8;">
-                        <div>
-                            1. OT Agustus - September yaitu 11 Agustus s/d 9 September
-                        </div>
-                        <div style="padding-left: 20px;">
-                            OT Tanggal 09 September Masuk OT Manual
-                        </div>
-
-                        <div style="margin-top: 8px;">
-                            2. OT September - Oktober yaitu 10 September s/d 11 Oktober
-                        </div>
-                        <div style="padding-left: 20px;">
-                            OT Tanggal 9,10,11 Oktober Masuk OT Manual
-                        </div>
-                    </div>
-                `
+                : "Untuk OT Tgl 9, 10, 11 Oktober Masuk OT Manual."
         }
     `;
 }
+
     } catch (error) {
         console.error("Gagal memuat dashboard:", error);
     }
