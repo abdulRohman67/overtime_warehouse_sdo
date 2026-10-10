@@ -1,3 +1,4 @@
+```javascript
 import { db } from "./firebase.js";
 import {
     ref,
@@ -52,23 +53,21 @@ async function loadDashboard() {
         }
 
         // Pesan selamat datang
-const welcome = document.getElementById("welcome");
-
-if (welcome) {
-    welcome.innerHTML = `
-        Selamat datang, <b>${s.name}</b>.
-        ${
-            s.role === "admin"
-                ? "Anda memiliki akses penuh untuk mengelola akun dan overtime."
-                : "Untuk OT Tgl 9, 10, 11 Oktober Masuk OT Manual."
+        const welcome = document.getElementById("welcome");
+        if (welcome) {
+            welcome.innerHTML = `
+                Selamat datang, <b>${s.name}</b>.
+                ${
+                    s.role === "admin"
+                        ? "Anda memiliki akses penuh untuk mengelola akun dan overtime."
+                        : "Anda hanya dapat melihat data overtime milik Anda."
+                }
+            `;
         }
-    `;
-}
-
     } catch (error) {
         console.error("Gagal memuat dashboard:", error);
     }
 }
 
 loadDashboard();
-
+```
