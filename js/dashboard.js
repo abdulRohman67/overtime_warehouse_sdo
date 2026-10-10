@@ -48,7 +48,7 @@ if (s) {
         ${
             s.role === "admin"
                 ? "Anda memiliki akses penuh untuk mengelola akun dan overtime."
-                 : "Untuk OT yang terjadi pada tanggal 9,10,11 Okober 2026 Masuk ke OT Manual."
+                
              
         }
     `;
