@@ -82,11 +82,11 @@ async function loadDashboard() {
                         </div>
 
                         <div style="margin-top: 8px;">
-                            2. OT September - Oktober yaitu 10 September 2026 s/d 11 Oktober 2026
+                            2. OT September - Oktober yaitu 10 September 2026 s/d 10 Oktober 2026
                         </div>
 
                         <div style="padding-left: 20px;">
-                            OT Tanggal 9,10,11 Oktober 2026 Masuk OT Manual
+                            OT Tanggal 9,10 Oktober 2026 Masuk OT Manual
                         </div>
                     </div>
                 `;
